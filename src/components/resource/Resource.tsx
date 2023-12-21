@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
+import { NavLink } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { ResourceProps } from "./types";
@@ -41,8 +42,15 @@ function Resource({ resource }: ResourceProps) {
               />
             </Grid>
             <Grid item>
-              <Link href={resource.url} variant="h6" underline="none" color="text-primary" target="_blank" rel="noopener">
-                {resource.title}
+              <Link
+                href={resource.url}
+                underline="none"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography variant="h6" sx={{ fontFamily: "PT Serif" }}>
+                  {resource.title}
+                </Typography>
               </Link>
             </Grid>
             <Grid item>

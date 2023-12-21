@@ -4,7 +4,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import EditIcon from "@mui/icons-material/Edit";
-import { Avatar } from "@mui/material";
 import { ApiClient } from "../../utils/ApiClient";
 import { InitialConfigType, LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -43,11 +42,8 @@ function Editor( { resource }: EditorProps ) {
 
   return (
     <>
-      <Box sx={{ padding: 3, borderBottom: 1, borderColor: "grey.300" }}>
+      <Box sx={{ paddingX: 3, paddingY: 4, borderBottom: 1, borderColor: "grey.300" }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item>
-            <Avatar />
-          </Grid>
           <Grid
             item
             xs
