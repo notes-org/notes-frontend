@@ -7,19 +7,27 @@ import { Filters } from "../components/filters/Filters";
 import { useQuery } from "react-query";
 import { ApiClient } from "../utils/ApiClient";
 import { RESOURCE_NOT_FOUND, RESOURCE_PLACEHOLDER } from "../mocks/resource";
+import { TopBar } from "../components/top-bar";
+import { useDebouncedCallback } from "use-debounce";
+import { useSearchParams } from "react-router-dom";
 
 function Notes() {
+  /** searchParams as state (we store URL state in it) */
+  const [searchParams, setSearchParams] = useSearchParams({ url: '' })
+  const url = searchParams.get('url')
+  const setURL = (value: string) => {
+    setSearchParams({ url: value });
+  }
   const { data: resource, error, isLoading } = useQuery(
     [
       'get-resource', {
-        url: new URLSearchParams(window.location.search).get("url")
+        url
       }] as const, // const is required to properly infer a type for queryKey
     async (context) => {
 
       const [_key, params] = context.queryKey;
       if (!params.url) {
-        console.error("Url is empty or null");
-        return RESOURCE_NOT_FOUND;
+        return RESOURCE_PLACEHOLDER;
       }
       const resource_or_null = await ApiClient.getOrCreateResource(params.url);
       return resource_or_null ?? RESOURCE_NOT_FOUND;
@@ -30,20 +38,30 @@ function Notes() {
     }
   );
 
-  return (
-    <Container maxWidth={false} sx={{ maxWidth: "800px" }}>
-      <Box>
+  /** Debounced setURL to use when user is typing */
+  const setURLDebounced = useDebouncedCallback(setURL, 500);
+
+  return (<>
+    <TopBar
+      defaultValue={url}
+      onChange={setURLDebounced}
+      onSubmit={setURL}
+    />
+    <Container
+      maxWidth={false} sx={{ maxWidth: "800px" }}
+    >
+      <Box className="h-100">
         {error != null && <h1 style={{ color: 'red' }}>{JSON.stringify(error)}</h1>}
         {isLoading && <h1 style={{ color: 'grey' }}>Loading ...</h1>}
-        {resource != undefined && <>
+        {resource && <>
           <Resource resource={resource} />
           <Editor resource={resource} />
           <Filters />
           {resource.notes.map((note, idx) => <Note key={idx} note={note} />)}
-        </>
-        }
+        </>}
       </Box>
     </Container>
+  </>
   );
 }
 

@@ -7,7 +7,5 @@ export const API_PATH = {
 } as const;
 /** React router paths */
 export const ROUTER_PATH = {
-    HOME: '/',
-    RESOURCE: '/resource', // singular on purpose
-    NOTES: '/notes',
+    NOTES: '/',
 } as const;
