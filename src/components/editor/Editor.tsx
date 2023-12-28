@@ -15,19 +15,17 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import SubmitButtonPlugin from "../lexical/SubmitButtonPlugin";
 import AutoFocusPlugin from "../lexical/AutoFocusPlugin";
 import { EditorProps } from "./types";
+import { FormattingToolBarPlugin } from "../lexical/FormattingToolBarPlugin";
+import { composerBaseConfig } from "./composerBaseConfig";
 
-function Editor( { resource }: EditorProps ) {
-  const composerConfig: InitialConfigType = {
-    namespace: 'notes', 
-    // theme: composerTheme, // to override theme if needed
-    onError: console.error,
-  };
+function Editor({ resource }: EditorProps) {
+  const composerConfig: InitialConfigType = { ...composerBaseConfig };
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const handleSubmit = async (editorState: EditorState) => {
-    await ApiClient.createNote({content: JSON.stringify(editorState.toJSON()) }, resource);
+    await ApiClient.createNote({ content: JSON.stringify(editorState.toJSON()) }, resource);
     // TODO: handle errors
     setOpen(false);
     // TODO: re-fetch data instead of refreshing the page.
@@ -53,9 +51,9 @@ function Editor( { resource }: EditorProps ) {
             sx={{ cursor: "text" }}
           >
             <Typography variant="subtitle1" color="text.secondary">
-            {!resource.locked ? "Have any context to add?" : "Sorry, this resource can't be edited ..."}
+              {!resource.locked ? "Have any context to add?" : "Sorry, this resource can't be edited ..."}
             </Typography>
-            {!resource.locked && <EditIcon sx={{ color: "text.secondary" }}/>}
+            {!resource.locked && <EditIcon sx={{ color: "text.secondary" }} />}
           </Grid>
         </Grid>
       </Box>
@@ -79,6 +77,7 @@ function Editor( { resource }: EditorProps ) {
         >
           <Box component="form" sx={{ width: 550 }}>
             <LexicalComposer initialConfig={composerConfig}>
+              <FormattingToolBarPlugin />
               <RichTextPlugin
                 placeholder={null}
                 contentEditable={<ContentEditable />}
@@ -87,7 +86,7 @@ function Editor( { resource }: EditorProps ) {
               <OnChangePlugin onChange={handleChange} />
               <HistoryPlugin />
               <AutoFocusPlugin />
-              <SubmitButtonPlugin onSubmit={handleSubmit}/>
+              <SubmitButtonPlugin onSubmit={handleSubmit} />
             </LexicalComposer>
           </Box>
         </Box>

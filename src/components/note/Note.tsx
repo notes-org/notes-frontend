@@ -12,13 +12,12 @@ import Typography from "@mui/material/Typography";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { NoteProps } from "./types";
 import { formatDate } from "../../utils/DateTime";
+import { composerBaseConfig } from "../editor/composerBaseConfig";
 
 function Note({ note }: NoteProps) {
   const composerConfig: InitialConfigType = {
-    namespace: "notes",
-    onError: console.error,
+    ...composerBaseConfig,
     editorState: JSON.stringify(note.content),
-    editable: false,
   };
 
   return (
