@@ -1,15 +1,18 @@
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
-import { NavLink } from "react-router-dom";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { ResourceProps } from "./types";
+import { formatUrl } from "../../utils/Url";
 
 function Resource({ resource }: ResourceProps) {
+  const { hostname, path } = formatUrl(resource.url);
+
   return (
     <>
       <Box
         sx={{
+          display: "flex",
           flexGrow: 1,
           borderBottom: 1,
           borderColor: "grey.300",
@@ -17,45 +20,63 @@ function Resource({ resource }: ResourceProps) {
         }}
       >
         <Grid container spacing={2}>
-          <Grid item xs="auto">
-            <Link href={resource.url} target="_blank" rel="noopener">
-              <Box
-                component="img"
-                alt=""
-                src={resource.image_url}
-                sx={{
-                  width: 112,
-                  height: 112,
-                  borderRadius: 4,
-                  objectFit: "cover",
-                }}
-              />
-            </Link>
-          </Grid>
-          <Grid item xs container spacing={1} direction="column">
-            <Grid item>
-              <Box
-                component="img"
-                alt=""
-                src={resource.favicon_url}
-                sx={{ height: 20, width: "auto" }}
-              />
-            </Grid>
-            <Grid item>
-              <Link
-                href={resource.url}
-                underline="none"
-                target="_blank"
-                rel="noopener"
-              >
-                <Typography variant="h6" sx={{ fontFamily: "PT Serif" }}>
+          <Grid item xs={12}>
+            <Link
+              href={resource.url}
+              className="group"
+              underline="none"
+              target="_blank"
+              rel="noopener"
+            >
+              <Box className="header" sx={{ display: "flex", alignItems: "center" }}>
+                <Box
+                  component="img"
+                  alt=""
+                  src={resource.favicon_url}
+                  sx={{
+                    height: 16,
+                    width: "auto",
+                    marginRight: 1,
+                  }}
+                />
+                <Typography
+                  variant="h6"
+                  className="group-hover:underline"
+                  sx={{
+                    fontFamily: "PT Serif",
+                    width: "100%",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {resource.title}
                 </Typography>
-              </Link>
-            </Grid>
-            <Grid item>
-              <Typography variant="body2">{resource.description}</Typography>
-            </Grid>
+              </Box>
+              <Box className="path" sx={{ display: "flex", marginTop: 0.5, maxWidth: "90%" }}>
+                <Typography
+                  component="span"
+                  sx={{ color: "#4d5156;", fontSize: 13, fontWeight: 700 }}
+                >
+                  {hostname}
+                </Typography>
+                <Typography
+                  component="span"
+                  sx={{
+                    color: "#4d5156;",
+                    fontSize: 13,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  &nbsp;{path}
+                </Typography>
+              </Box>
+            </Link>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body2">{resource.description}</Typography>
           </Grid>
         </Grid>
       </Box>

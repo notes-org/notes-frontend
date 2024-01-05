@@ -24,7 +24,6 @@ export namespace api {
         tld: string;
         title: string,
         description: string;
-        image_url: string;
         favicon_url: string;
         site_name: string;
         notes: Array<Note>;

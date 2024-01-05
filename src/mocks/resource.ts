@@ -12,8 +12,7 @@ export const RESOURCE_NOT_FOUND: api.Resource = {
     tld: "...",
     title: "Resource not found",
     description: "This resource cannot be parsed or does not exist",
-    image_url: "public/not-found.png",
-    favicon_url: "...",
+    favicon_url: "https://www.google.com/s2/favicons?domain=example.com",
     site_name: "...",
     notes: []
 }
@@ -30,8 +29,7 @@ export const RESOURCE_PLACEHOLDER: api.Resource = {
     tld: "...",
     title: "Your source URL is empty",
     description: "Paste an URL in the field above.",
-    image_url: "public/empty-url.png",
-    favicon_url: "...",
+    favicon_url: "https://www.google.com/s2/favicons?domain=example.com",
     site_name: "...",
     notes: []
 }
