@@ -23,11 +23,12 @@ function Resource({ resource }: ResourceProps) {
           <Grid item xs={12}>
             <Link
               href={resource.url}
+              className="group"
               underline="none"
               target="_blank"
               rel="noopener"
             >
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box className="header" sx={{ display: "flex", alignItems: "center" }}>
                 <Box
                   component="img"
                   alt=""
@@ -40,6 +41,7 @@ function Resource({ resource }: ResourceProps) {
                 />
                 <Typography
                   variant="h6"
+                  className="group-hover:underline"
                   sx={{
                     fontFamily: "PT Serif",
                     width: "100%",
@@ -51,7 +53,7 @@ function Resource({ resource }: ResourceProps) {
                   {resource.title}
                 </Typography>
               </Box>
-              <Box sx={{ display: "flex", marginTop: 0.5, maxWidth: "90%" }}>
+              <Box className="path" sx={{ display: "flex", marginTop: 0.5, maxWidth: "90%" }}>
                 <Typography
                   component="span"
                   sx={{ color: "#4d5156;", fontSize: 13, fontWeight: 700 }}
