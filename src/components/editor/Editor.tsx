@@ -58,29 +58,21 @@ function Editor({ resource }: EditorProps) {
         </Grid>
       </Box>
 
-      <Modal
+      <Dialog
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box
-          sx={{
-            position: "absolute" as const,
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            boxShadow: 10,
-            outline: "none",
-            backgroundColor: "background.paper",
-          }}
-        >
-          <Box component="form" sx={{ width: 550 }}>
+        <DialogTitle>Create a Note</DialogTitle>
+        <DialogContent>
             <LexicalComposer initialConfig={composerConfig}>
               <FormattingToolBarPlugin />
               <RichTextPlugin
                 placeholder={null}
-                contentEditable={<ContentEditable />}
+              contentEditable={
+                <ContentEditable className="m-2 p-2 border" />
+              }
                 ErrorBoundary={LexicalErrorBoundary}
               />
               <OnChangePlugin onChange={handleChange} />
@@ -88,9 +80,8 @@ function Editor({ resource }: EditorProps) {
               <AutoFocusPlugin />
               <SubmitButtonPlugin onSubmit={handleSubmit} />
             </LexicalComposer>
-          </Box>
-        </Box>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
