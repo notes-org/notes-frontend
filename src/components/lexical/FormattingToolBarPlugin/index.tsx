@@ -1,23 +1,20 @@
-import { $getSelection, $isRangeSelection } from "lexical";
-import { useCallback, useState } from "react";
+import { $getSelection, $isRangeSelection, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_CRITICAL } from "lexical";
+import { useCallback, useEffect, useState } from "react";
 import { $isRootOrShadowRoot } from "lexical";
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import Box from '@mui/material/Box';
 import { FormControl, InputLabel, OutlinedInput, MenuItem } from "@mui/material";
 import Select from "@mui/material/Select";
-import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { $isLinkNode } from '@lexical/link';
 import { $isTableNode } from '@lexical/table';
 import {
   $findMatchingParent,
-  $getNearestBlockElementAncestorOrThrow,
   $getNearestNodeOfType,
-  mergeRegister,
 } from '@lexical/utils';
 import {
   $isListNode,
   INSERT_CHECK_LIST_COMMAND,
   INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
   ListNode,
   REMOVE_LIST_COMMAND,
 } from '@lexical/list';
@@ -25,7 +22,6 @@ import {
   $createHeadingNode,
   $createQuoteNode,
   $isHeadingNode,
-  $isQuoteNode,
   HeadingTagType,
 } from '@lexical/rich-text';
 import {
@@ -42,11 +38,11 @@ const blockTypeToBlockName = {
   check: 'Check List',
   code: 'Code Block',
   h1: 'Heading',
-  // h2: 'Heading 2',
-  // h3: 'Heading 3',
-  // h4: 'Heading 4',
-  // h5: 'Heading 5',
-  // h6: 'Heading 6',
+  h2: 'Heading 2',
+  h3: 'Heading 3',
+  h4: 'Heading 4',
+  h5: 'Heading 5',
+  h6: 'Heading 6',
   number: 'Numbered List',
   paragraph: 'Normal',
   quote: 'Quote',
@@ -128,6 +124,7 @@ export function BlockFormatDropDown({
           id="style"
           input={< OutlinedInput label="Name" />}
           value={blockType}
+          variant="outlined"
         >
           <MenuItem
             value="paragraph"
@@ -137,10 +134,10 @@ export function BlockFormatDropDown({
           </MenuItem>
 
           < MenuItem
-            value="heading"
+            value="h1"
             onClick={() => formatHeading('h1')}
           >
-            Heading
+            Heading 1
           </MenuItem>
 
           < MenuItem
@@ -170,6 +167,7 @@ export function BlockFormatDropDown({
 export function FormattingToolBarPlugin() {
 
   const [editor] = useLexicalComposerContext();
+  const [activeEditor, setActiveEditor] = useState(editor);
   const [rootType, setRootType] = useState<BlockFormatDropDownProps['rootType']>("root");
   const [blockType, setBlockType] = useState<BlockFormatDropDownProps['blockType']>("paragraph");
   const [selectedElementKey, setSelectedElementKey] = useState("")
@@ -232,8 +230,20 @@ export function FormattingToolBarPlugin() {
       }
 
     }
-  }, [editor]);
+  }, [activeEditor]);
 
+  useEffect(() => {
+    return editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      (_payload, newEditor) => {
+        $updateToolbar();
+        setActiveEditor(newEditor);
+        return false;
+      },
+      COMMAND_PRIORITY_CRITICAL,
+    );
+  }, [editor, $updateToolbar]);
+  
   return (
     <Box>
       <BlockFormatDropDown
