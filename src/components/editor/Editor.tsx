@@ -53,7 +53,7 @@ function Editor({ resource }: EditorProps) {
             <Typography variant="subtitle1" color="text.secondary">
               {!resource.locked ? "Have any context to add?" : "Sorry, this resource can't be edited ..."}
             </Typography>
-            {!resource.locked && <EditIcon sx={{ color: "text.secondary" }} />}
+            {!resource.locked && <EditIcon sx={{ color: "text.secondary" }} className="cursor-pointer" />}
           </Grid>
         </Grid>
       </Box>
