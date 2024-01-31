@@ -21,4 +21,4 @@ Run `npm i` to install the packages.
 
 ## Run
 
-`npm run dev` will launch a dev server available at [http://127.0.0.1:3000](http://127.0.0.1:3000).
+`npm run dev` will launch a dev server available at [http://localhost:5173](http://localhost:5173).
