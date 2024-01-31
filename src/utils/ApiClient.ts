@@ -21,7 +21,7 @@ export namespace ApiClient {
     // Note: it might be useful to use add interceptors on the client (to transform the response, or the request)
     // TODO: httpClient.defaults.headers.common['Authorization'] = AUTH_TOKEN;
     const httpClient: AxiosInstance = axios.create({
-        baseURL: env.BACKEND_URL,
+        baseURL: env.VITE_BACKEND_URL,
         headers: {
             "Content-Type": "application/json"            
         }
@@ -43,7 +43,7 @@ export namespace ApiClient {
         return null;
     };
 
-    const memoizedRefreshToken = mem(refreshTokenFn, { maxAge: Number(env.JWT_MAX_AGE) });
+    const memoizedRefreshToken = mem(refreshTokenFn, { maxAge: Number(env.VITE_JWT_MAX_AGE) });
 
     /** Define an interceptor to insert the authorization header (Bearer ...) */
     httpClient.interceptors.request.use(
@@ -89,6 +89,9 @@ export namespace ApiClient {
      * injected (see interceptors above)
      */
     export async function login(username: string, password: string): Promise<boolean> {
+        if (!username || !password) {
+            throw new Error("Username and/or password is empty or undefined")
+        }
         try {
             const response = await httpClient.post(
                 `${API_PATH.AUTH}/token`,
@@ -98,7 +101,7 @@ export namespace ApiClient {
             localStorage.setItem("access_token", response.data.access_token);
             return true;
         } catch (error: any) {
-            console.error(`Unable to createResource`, error)
+            console.error(`Unable to login`, error)
             return false;
         }
     }

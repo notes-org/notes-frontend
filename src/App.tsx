@@ -15,9 +15,7 @@ const theme = createTheme({
 function App() {
   useEffect(() => {
     /** Temporary code to login automatically */
-    ApiClient.login(env.USERNAME, env.PASSWORD)
-      .then(() => console.debug(`${env.USERNAME} successfully logged`))
-      .catch((reason: any) => console.error(`${env.USERNAME} log failed!`, JSON.stringify(reason)))
+    ApiClient.login(env.VITE_USERNAME, env.VITE_PASSWORD)
   }, [])
   return (
     <ThemeProvider theme={theme}>

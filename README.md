@@ -9,12 +9,11 @@ First, create an `.env.local` file with the following variables:
 
 ```
 # For both dev, stage and prod
-VITE_BASE_URL="http://127.0.0.1:5173";
-VITE_BACKEND_URL="http://127.0.0.1:8000/v1";
-VITE_JWT_MAX_AGE="10000";
-# For dev only (this is temporary)
-USERNAME="berenger";
-PASSWORD="berenger";
+VITE_BACKEND_URL=http://127.0.0.1:8000/v1
+VITE_JWT_MAX_AGE=10000
+# TEMPORARY: you need to manually create an account on the server and set the credentials here:
+VITE_USERNAME=berenger
+VITE_PASSWORD=berenger
 ```
 
 Run `npm i` to install the packages.
