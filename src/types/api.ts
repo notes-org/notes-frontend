@@ -44,4 +44,13 @@ export namespace api {
     };
 
     export type ValidationError = ErrorResponse<ValidationErrorItem[]>;
+
+    export type User = {
+        uuid: string,
+        username: string;
+        email: string;
+        is_active: true;
+        created_at: string;
+    }
+
 }
