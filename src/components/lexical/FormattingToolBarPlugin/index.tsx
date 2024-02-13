@@ -14,7 +14,7 @@ import {
 import {
   $isListNode,
   INSERT_CHECK_LIST_COMMAND,
-  INSERT_ORDERED_LIST_COMMAND,
+  // INSERT_ORDERED_LIST_COMMAND,
   ListNode,
   REMOVE_LIST_COMMAND,
 } from '@lexical/list';
@@ -63,8 +63,8 @@ export type BlockFormatDropDownProps = {
 export function BlockFormatDropDown({
   blockType,
   editor,
-  rootType,
-  disabled = false,
+  // rootType,
+  // disabled = false,
 }: BlockFormatDropDownProps): JSX.Element {
 
   const formatParagraph = () => {
@@ -96,13 +96,13 @@ export function BlockFormatDropDown({
     }
   };
 
-  const formatNumberedList = () => {
-    if (blockType !== 'number') {
-      editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
-    } else {
-      editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
-    }
-  };
+  // const formatNumberedList = () => {
+  //   if (blockType !== 'number') {
+  //     editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+  //   } else {
+  //     editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+  //   }
+  // };
 
   const formatQuote = () => {
     if (blockType !== 'quote') {
@@ -170,8 +170,8 @@ export function FormattingToolBarPlugin() {
   const [activeEditor, setActiveEditor] = useState(editor);
   const [rootType, setRootType] = useState<BlockFormatDropDownProps['rootType']>("root");
   const [blockType, setBlockType] = useState<BlockFormatDropDownProps['blockType']>("paragraph");
-  const [selectedElementKey, setSelectedElementKey] = useState("")
-  const [isLink, setIsLink] = useState(false);
+  const [, setSelectedElementKey] = useState("")
+  const [, setIsLink] = useState(false);
 
   const $updateToolbar = useCallback(() => {
     const selection = $getSelection();

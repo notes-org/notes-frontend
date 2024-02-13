@@ -10,7 +10,7 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import { $createTextNode, $getRoot, EditorState, $createParagraphNode } from 'lexical';
+import { $createTextNode, $getRoot, EditorState /*, $createParagraphNode*/ } from 'lexical';
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import SubmitButtonPlugin from "../lexical/SubmitButtonPlugin";
