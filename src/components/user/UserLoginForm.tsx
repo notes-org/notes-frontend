@@ -45,6 +45,7 @@ export function UserLoginForm({ onLogged }: Props) {
                 dispatch({ type: 'error', message: "unable to log in"})
             }            
         }
+        event?.target.reset();
     }
 
     return (
