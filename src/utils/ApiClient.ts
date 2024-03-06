@@ -2,6 +2,7 @@ import { api } from '../types/api';
 import { API_PATH, env } from "../config";
 import axios, { AxiosInstance, AxiosResponse, HttpStatusCode } from 'axios';
 import mem from 'mem'; // Memoized
+import { UserCredentials } from '../types/user';
 
 export class ApiError extends Error {
     reason: any;
@@ -88,7 +89,7 @@ export namespace ApiClient {
      * access_token is stored in the local storage as "access_token" and will be automatically
      * injected (see interceptors above)
      */
-    export async function login(username: string, password: string): Promise<boolean> {
+    export async function login({username, password}: UserCredentials): Promise<boolean> {
         if (!username || !password) {
             throw new Error("Username and/or password is empty or undefined")
         }
