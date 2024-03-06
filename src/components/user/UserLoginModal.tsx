@@ -12,7 +12,7 @@ type Props = {
 export function UserLoginModal(props: Props) {
     return (
         <Dialog {...props}>
-            <Box sx={{ width: 550 }}>
+            <Box sx={{ width: 350 }}>
                 <UserLoginForm onLogged={props.onClose}/>
             </Box>
         </Dialog>
