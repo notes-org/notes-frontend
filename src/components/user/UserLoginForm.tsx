@@ -32,7 +32,6 @@ export function UserLoginForm({ onLogged }: Props) {
         if ( success ) {
             onLogged();
         }
-        event?.target.reset();
     }
 
     const onSubmitLogin: SubmitHandler<UserCredentials> = async (formData, event) => {
