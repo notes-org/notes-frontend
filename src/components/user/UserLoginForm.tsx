@@ -36,10 +36,10 @@ export function UserLoginForm() {
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             
-            <TextField {...register("username"), { required: true }} label="Username" variant="standard" />
+            <TextField {...register("username")} required label="Username" variant="standard" />
             {errors.username && <span>This field is required</span>}
 
-            <TextField {...register("password"), { required: true }} label="Password" variant="standard" type="password"/>
+            <TextField {...register("password")} required label="Password" variant="standard" type="password"/>
             {errors.password && <span>This field is required</span>}
 
             <input type="submit" />

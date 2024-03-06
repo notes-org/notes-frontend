@@ -83,5 +83,5 @@ function userReducer(state: State, action: Action): State {
 const initialState: State = {
     username: null,
     isLogged: false,
-    status: 'Not connected yet'
+    status: 'Not connected'
 }

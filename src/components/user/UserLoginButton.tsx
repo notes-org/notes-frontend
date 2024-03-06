@@ -1,4 +1,5 @@
-import { Button, Icon } from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import PersonIcon from '@mui/icons-material/Person';
 import { useUser, useUserDispatch } from "../../contexts/UserContext";
 import { MouseEventHandler, useState } from "react";
 import { UserLoginModal } from "./UserLoginModal";
@@ -18,16 +19,24 @@ export function UserLoginButton() {
         dispatch({type: "loggedOut"})
     }
 
-    return (<>
-        <Icon>user</Icon>
+    const renderLoginOrLogoutBtn = () => {
+        if ( user.isLogged ) {
+            return <Button variant="outlined" onClick={handleLogout}>Logout</Button>
+        }
+        return <Button variant="outlined" onClick={handleLogin}>Login</Button>
+    }
+
+    return (
+    <Box className="flex gap-2 items-center">
+        <Tooltip title={user.status}>
+            <IconButton>
+                <PersonIcon />
+            </IconButton>
+        </Tooltip>
         {user.username && <span>{user.username}</span>}
-        <Button onClick={
-            user.isLogged ? handleLogout
-                          : handleLogin
-            }>{user.isLogged ? 'Logout'
-                             : 'Login'}
-        </Button>
-        <span>{user.status}</span>
+        {renderLoginOrLogoutBtn()}        
+        <span></span>
         <UserLoginModal open={isDialogOpen} onClose={() => setDialogOpen(false)}/>
-    </>)
+    </Box>
+    )
 }

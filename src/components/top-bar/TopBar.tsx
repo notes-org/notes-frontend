@@ -52,9 +52,12 @@ function TopBar({ defaultValue, onChange, onSubmit, rightContent }: TopBarProps)
 						onChange={handleChange}
 					/>
 				</Box>
+				<Box className="flex items-end">
+					{rightContent}
+				</Box>				
 			</Box >
-		</Container>
-		{rightContent}
+			
+		</Container>		
 	</>)
 }
 
