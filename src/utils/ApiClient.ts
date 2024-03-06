@@ -82,6 +82,10 @@ export namespace ApiClient {
         }
     );
 
+    /** TODO */
+    export async function logout(): Promise<boolean> {
+        throw new Error("Not implemented yet")    
+    }
 
     /**
      * Login to the API with a username and a password.

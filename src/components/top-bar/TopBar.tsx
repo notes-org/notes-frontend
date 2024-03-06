@@ -6,9 +6,10 @@ import { Divider, InputBase } from "@mui/material";
 import { useState } from "react";
 
 /*
- * State less top bar including an url input
+ * State less top bar including an url input.
+ * Additional elements can be added on the right side via rightContent property.
  */
-function TopBar({ defaultValue, onChange, onSubmit }: TopBarProps) {
+function TopBar({ defaultValue, onChange, onSubmit, rightContent }: TopBarProps) {
 
 	/** Input field */
 	const [value, setValue] = useState(defaultValue)
@@ -25,7 +26,7 @@ function TopBar({ defaultValue, onChange, onSubmit }: TopBarProps) {
 		onSubmit(newValue)
 	}
 
-	return (
+	return (<>
 		<Container
 			maxWidth={false}
 			className="w-100 shadow-md shadow-blue-300/10 py-2"
@@ -53,7 +54,8 @@ function TopBar({ defaultValue, onChange, onSubmit }: TopBarProps) {
 				</Box>
 			</Box >
 		</Container>
-	)
+		{rightContent}
+	</>)
 }
 
 export default TopBar;

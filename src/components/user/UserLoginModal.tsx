@@ -4,7 +4,7 @@ import { UserLoginForm } from "./UserLoginForm";
 /**
  * Wraps UserLoginForm in a Modal
  */
-export function UserLoginModal(props: ModalProps) {
+export function UserLoginModal(props: Pick<ModalProps, 'open' | 'onClose'>) {
     return (
         <Modal {...props}>
             <UserLoginForm/>
