@@ -4,7 +4,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import EditIcon from "@mui/icons-material/Edit";
-import { ApiClient } from "../../utils/ApiClient";
 import { InitialConfigType, LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -15,6 +14,7 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import SubmitButtonPlugin from "../lexical/SubmitButtonPlugin";
 import AutoFocusPlugin from "../lexical/AutoFocusPlugin";
 import { EditorProps } from "./types";
+import { useApiClient } from "../../hooks/useApiClient";
 
 function Editor( { resource }: EditorProps ) {
   const composerConfig: InitialConfigType = {
@@ -25,9 +25,10 @@ function Editor( { resource }: EditorProps ) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const api = useApiClient();
 
   const handleSubmit = async (editorState: EditorState) => {
-    await ApiClient.createNote({content: JSON.stringify(editorState.toJSON()) }, resource);
+    await api.createNote({content: JSON.stringify(editorState.toJSON()) }, resource);
     // TODO: handle errors
     setOpen(false);
     // TODO: re-fetch data instead of refreshing the page.

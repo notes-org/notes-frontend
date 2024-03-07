@@ -1,10 +1,9 @@
 import TextField from "@mui/material/TextField";
 import { UserCreate, UserCredentials } from "../../types/user";
 import { useForm, SubmitHandler } from "react-hook-form"
-import { ApiClient } from "../../utils/ApiClient";
-import { useUserDispatch } from "../../contexts/UserContext";
 import { Box, Button } from "@mui/material";
 import { useState } from "react";
+import { useApiClient } from "../../hooks/useApiClient";
 
 type Props = {
     onLogged: () => void;
@@ -15,41 +14,43 @@ type Props = {
  */
 export function UserLoginForm({ onLogged }: Props) {
 
-    const dispatch = useUserDispatch();
+    const api = useApiClient();
     const [signUp, setSignUp] = useState(false);
-
+    const [status, setStatus] = useState("");
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<UserCredentials | UserCreate>()
+    } = useForm<UserCredentials & UserCreate>()
 
-    const onSubmit: SubmitHandler<UserCredentials | UserCreate> = async (data, event) => {
+    const onPreSubmit = () => {
+        setStatus('Submitting...')
+    }
 
-        event?.preventDefault();
-
-        if( signUp && 'email' in data) {
-            const connected = await ApiClient.signup(data);
-            if ( connected ) {
-                dispatch({ type: 'loggedIn', username: data.username})
-                onLogged()
-            } else {
-                dispatch({ type: 'error', message: "unable to log in"})
-            }
-        } else {
-            const connected = await ApiClient.login(data);
-            if ( connected ) {
-                dispatch({ type: 'loggedIn', username: data.username})
-                onLogged()
-            } else {
-                dispatch({ type: 'error', message: "unable to log in"})
-            }            
+    const onPostSubmit = (success: boolean) => {
+        setStatus(success ? "Success" : "Oups, something wrong happened...");
+        if ( success ) {
+            onLogged();
         }
+    }
+
+    const onSubmitLogin: SubmitHandler<UserCredentials> = async (formData, event) => {
+        event?.preventDefault();
+        onPreSubmit();
+        const success = await api.login(formData);    
+        onPostSubmit(success);
+    }
+
+    const onSubmitSignUp: SubmitHandler<UserCreate> = async (formData, event) => {
+        event?.preventDefault();
+        onPreSubmit();
+        const success = await api.signup(formData);    
+        onPostSubmit(success);
     }
 
     return (
         <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit( signUp ? onSubmitSignUp : onSubmitLogin)}
             className="flex flex-col p-2 gap-3"
         >
             <h1 className="text-2xl">
@@ -71,6 +72,7 @@ export function UserLoginForm({ onLogged }: Props) {
             >
                 { signUp ? 'Already have an account? Sign-in' : 'No account yet? Sign-up' }
             </a>
+            {status && <span>{status}</span>}
             <Box className="flex gap-2 justify-center">
                 <Button type="reset" variant="contained">Reset</Button>
                 <Button type="submit" variant="contained">Submit</Button>

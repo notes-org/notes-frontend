@@ -2,7 +2,7 @@ import { api } from '../types/api';
 import { API_PATH, env } from "../config";
 import axios, { AxiosInstance, AxiosResponse, HttpStatusCode } from 'axios';
 import mem from 'mem'; // Memoized
-import { UserCreate, UserCredentials } from '../types/user';
+import { User, UserCreate, UserCredentials } from '../types/user';
 
 export class ApiError extends Error {
     reason: any;
@@ -15,6 +15,8 @@ export class ApiError extends Error {
 
 /**
  * Set of function to deal with the backend API.
+ * Consider using the hook useApiClient instead, this Api is stateless
+ * (except for the access_token which is stored in the local storage).
  */
 export namespace ApiClient {
 
@@ -94,9 +96,23 @@ export namespace ApiClient {
         }   
     }
 
-    /** TODO (not implemented on backend side) */
+    export async function getme(): Promise<User | null> {
+        try {
+            // Note that if it fails, the interceptor migh be able to catch it and
+            // grab the token from the local storaga and retry (see interceptors above)
+            return await httpClient.get(`${API_PATH.USERS}/me`);
+        } catch ( error: any) {
+            console.error(`Unable to get current user`, error)
+            return null;
+        }
+    }
+
+    /**
+     * TODO: nothing implemented on the backend side, should be manipulate this token manually on the frontend...?
+     */
     export async function logout(): Promise<boolean> {
-        throw new Error("Not implemented yet")    
+        localStorage.removeItem("access_token");
+        return true;    
     }
 
     /**
