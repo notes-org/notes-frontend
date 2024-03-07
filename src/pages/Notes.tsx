@@ -10,6 +10,7 @@ import { RESOURCE_NOT_FOUND, RESOURCE_PLACEHOLDER } from "../mocks/resource";
 import { TopBar } from "../components/top-bar";
 import { useDebouncedCallback } from "use-debounce";
 import { useSearchParams } from "react-router-dom";
+import { UserLoginButton } from "../components/user/UserLoginButton";
 
 function Notes() {
   /** searchParams as state (we store URL state in it) */
@@ -46,6 +47,9 @@ function Notes() {
       defaultValue={url}
       onChange={setURLDebounced}
       onSubmit={setURL}
+      rightContent={
+        <UserLoginButton/>
+      }
     />
     <Container
       maxWidth={false} sx={{ maxWidth: "800px" }}

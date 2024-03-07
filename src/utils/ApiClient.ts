@@ -2,6 +2,7 @@ import { api } from '../types/api';
 import { API_PATH, env } from "../config";
 import axios, { AxiosInstance, AxiosResponse, HttpStatusCode } from 'axios';
 import mem from 'mem'; // Memoized
+import { UserCreate, UserCredentials } from '../types/user';
 
 export class ApiError extends Error {
     reason: any;
@@ -81,6 +82,22 @@ export namespace ApiClient {
         }
     );
 
+    /**
+     * Create a new user with the provided user information.
+     */
+    export async function signup(user: UserCreate): Promise<boolean> {
+        try {
+            return await httpClient.post(`${API_PATH.USERS}`, user);
+        } catch (error: any) {
+            console.error(`Unable to signup`, error)
+            return false;
+        }   
+    }
+
+    /** TODO (not implemented on backend side) */
+    export async function logout(): Promise<boolean> {
+        throw new Error("Not implemented yet")    
+    }
 
     /**
      * Login to the API with a username and a password.
@@ -88,7 +105,7 @@ export namespace ApiClient {
      * access_token is stored in the local storage as "access_token" and will be automatically
      * injected (see interceptors above)
      */
-    export async function login(username: string, password: string): Promise<boolean> {
+    export async function login({username, password}: UserCredentials): Promise<boolean> {
         if (!username || !password) {
             throw new Error("Username and/or password is empty or undefined")
         }
