@@ -1,10 +1,3 @@
-import {
-  InitialConfigType,
-  LexicalComposer,
-} from "@lexical/react/LexicalComposer";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
@@ -12,14 +5,9 @@ import Typography from "@mui/material/Typography";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { NoteProps } from "./types";
 import { formatDate } from "../../utils/DateTime";
+import ReactQuill from "react-quill";
 
 function Note({ note }: NoteProps) {
-  const composerConfig: InitialConfigType = {
-    namespace: "notes",
-    onError: console.error,
-    editorState: JSON.stringify(note.content),
-    editable: false,
-  };
 
   return (
     <>
@@ -57,13 +45,7 @@ function Note({ note }: NoteProps) {
               </Grid>
               <Grid item>
                 <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
-                  <LexicalComposer initialConfig={composerConfig}>
-                    <RichTextPlugin
-                      placeholder={null}
-                      contentEditable={<ContentEditable />}
-                      ErrorBoundary={LexicalErrorBoundary}
-                    />
-                  </LexicalComposer>
+                  <ReactQuill theme="snow" value={note.content} readOnly/>                
                 </Typography>
               </Grid>
             </Grid>
