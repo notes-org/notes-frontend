@@ -32,7 +32,7 @@ export function UserProvider({ children }: PropsWithChildren) {
   );
 }
 
-export function useUser(): State {
+export function useUserContext(): State {
   const context = useContext(Context);
   if ( context == null) throw new Error("Unable to use UserContext, did you wrapped this component in a UserProvider?");
   return context;

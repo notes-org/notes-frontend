@@ -5,14 +5,15 @@ import { Note } from "../components/note";
 import { Editor } from "../components/editor/Editor";
 import { Filters } from "../components/filters/Filters";
 import { useQuery } from "react-query";
-import { ApiClient } from "../utils/ApiClient";
 import { RESOURCE_NOT_FOUND, RESOURCE_PLACEHOLDER } from "../mocks/resource";
 import { TopBar } from "../components/top-bar";
 import { useDebouncedCallback } from "use-debounce";
 import { useSearchParams } from "react-router-dom";
 import { UserLoginButton } from "../components/user/UserLoginButton";
+import { useApiClient } from "../hooks/useApiClient";
 
 function Notes() {
+  const api = useApiClient();
   /** searchParams as state (we store URL state in it) */
   const [searchParams, setSearchParams] = useSearchParams({ url: '' })
   const url = searchParams.get('url')
@@ -30,7 +31,7 @@ function Notes() {
       if (!params.url) {
         return RESOURCE_PLACEHOLDER;
       }
-      const resource_or_null = await ApiClient.getOrCreateResource(params.url);
+      const resource_or_null = await api.getOrCreateResource(params.url);
       return resource_or_null ?? RESOURCE_NOT_FOUND;
     },
     {
