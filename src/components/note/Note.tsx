@@ -45,7 +45,7 @@ function Note({ note }: NoteProps) {
               </Grid>
               <Grid item>
                 <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
-                  <ReactQuill theme="snow" value={note.content} readOnly/>                
+                  <ReactQuill theme="bubble" value={note.content} readOnly/>                
                 </Typography>
               </Grid>
             </Grid>
