@@ -213,7 +213,7 @@ export namespace ApiClient {
             return response.data;
         } catch (error: any ) {    
             // The only error we allow is a 404, otherwize we return a null
-            if (error.status !== HttpStatusCode.NotFound) {
+            if (!error.response || error.response.status !== HttpStatusCode.NotFound) {
                 console.error('Unable to get the resource', error)
                 return null;                          
             }
@@ -226,7 +226,7 @@ export namespace ApiClient {
             return response.data;
         } catch (error: any) {
             // The only error we allow is 409, it signify an other user created the same resource (race condition)
-            if (error.status !== HttpStatusCode.Conflict) {
+            if (!error.response || error.response.status !== HttpStatusCode.Conflict) {
                 console.error('Unable to create the resource', error)
                 return null;            
             }
