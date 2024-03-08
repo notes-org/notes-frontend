@@ -12,7 +12,7 @@ import { ApiClient } from "../utils/ApiClient";
  *        |                     |
  *        ----- UserContext <----
  * 
- * Condider bringing new functionnality here by calling ApiClient's functions.
+ * Consider bringing new functionality here by calling ApiClient's functions.
  * But, implement the maximum as pure functions in ApiClient instead of here.
  */
 export function useApiClient() {
@@ -35,14 +35,14 @@ export function useApiClient() {
     }, [])
 
     /**
-     * SignIn using credentials and update user context accordingly
+     * Sign up using credentials and update user context accordingly
      */
     const signup = useCallback( async (userCreate: UserCreate): Promise<boolean> => {
         const success = await ApiClient.signup(userCreate);
         if ( success ) {
             dispatch({ type: 'loggedIn', username: userCreate.username})
         } else {
-            dispatch({ type: 'error', message: "Unable to sign in"})
+            dispatch({ type: 'error', message: "Unable to sign up"})
         }
         return success;
     }, [context])
