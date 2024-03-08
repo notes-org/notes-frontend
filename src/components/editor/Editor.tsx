@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FormEventHandler, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
@@ -13,22 +13,30 @@ import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 
 const DEFAULT_VALUE = "";
 
-function Editor( { resource }: EditorProps ) {
+function Editor( { resource, onCreateNote }: EditorProps ) {
 
   const [value, setValue] = useState<ReactQuill.Value>(DEFAULT_VALUE);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [status, setStatus] = useState<string | null>(null);
   const api = useApiClient();
 
-  const handleSubmit = async () => {
-    await api.createNote({content: JSON.stringify(value) }, resource);
-    // TODO: handle errors
-    setOpen(false);
-    setValue(DEFAULT_VALUE);
-    // TODO: re-fetch data instead of refreshing the page.
-    //       This can be done using a context or global state
-    window.location.reload();
+  useEffect( () => {
+    if (!open) setStatus(null)
+  }, [open])
+
+  const handleSubmit: FormEventHandler = async (event) => {
+    event.preventDefault();
+    setStatus("Submitting...")
+    const newNote = await api.createNote({content: JSON.stringify(value) }, resource);
+    if ( newNote ) {
+      // TODO: handle errors
+      setOpen(false);
+      setValue(DEFAULT_VALUE);
+      onCreateNote(newNote)
+    }
+    setStatus( newNote ? "Submitted" : "Oups, we're unable to submit...")
   };
 
   const handleChange = (value: string, delta: DeltaStatic, source: Sources, editor: ReactQuill.UnprivilegedEditor): void => {
@@ -84,6 +92,7 @@ function Editor( { resource }: EditorProps ) {
               <Button variant="outlined" onClick={handleCancel}>Cancel</Button>              
               <Button variant="contained" type="submit">Submit</Button>
             </Box>
+            <p>{status}</p>
           </Box>
         </DialogContent>
       </Dialog>
