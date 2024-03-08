@@ -1,44 +1,53 @@
-import React from "react";
+import React, { FormEventHandler, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
 import EditIcon from "@mui/icons-material/Edit";
-import { InitialConfigType, LexicalComposer } from '@lexical/react/LexicalComposer';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import { EditorState } from "lexical";
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
-import SubmitButtonPlugin from "../lexical/SubmitButtonPlugin";
-import AutoFocusPlugin from "../lexical/AutoFocusPlugin";
 import { EditorProps } from "./types";
 import { useApiClient } from "../../hooks/useApiClient";
+import ReactQuill from 'react-quill';
+import { DeltaStatic, Sources } from 'quill';
+import 'react-quill/dist/quill.snow.css';
+import Button from "@mui/material/Button";
+import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 
-function Editor( { resource }: EditorProps ) {
-  const composerConfig: InitialConfigType = {
-    namespace: 'notes', 
-    // theme: composerTheme, // to override theme if needed
-    onError: console.error,
-  };
+const DEFAULT_VALUE = "";
+
+function Editor( { resource, onCreateNote }: EditorProps ) {
+
+  const [value, setValue] = useState<ReactQuill.Value>(DEFAULT_VALUE);
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [status, setStatus] = useState<string | null>(null);
   const api = useApiClient();
 
-  const handleSubmit = async (editorState: EditorState) => {
-    await api.createNote({content: JSON.stringify(editorState.toJSON()) }, resource);
-    // TODO: handle errors
-    setOpen(false);
-    // TODO: re-fetch data instead of refreshing the page.
-    //       This can be done using a context or global state
-    window.location.reload();
+  useEffect( () => {
+    if (!open) setStatus(null)
+  }, [open])
+
+  const handleSubmit: FormEventHandler = async (event) => {
+    event.preventDefault();
+    setStatus("Submitting...")
+    const newNote = await api.createNote({content: JSON.stringify(value) }, resource);
+    if ( newNote ) {
+      // TODO: handle errors
+      setOpen(false);
+      setValue(DEFAULT_VALUE);
+      onCreateNote(newNote)
+    }
+    setStatus( newNote ? "Submitted" : "Oups, we're unable to submit...")
   };
 
-  const handleChange = (editorState: EditorState /*, editor: LexicalEditor, tags: Set<string>*/) => {
-    console.log(`Editor content changed:\n${JSON.stringify(editorState, null, '  ')}`);
-    // TODO: validate data
+  const handleChange = (value: string, delta: DeltaStatic, source: Sources, editor: ReactQuill.UnprivilegedEditor): void => {
+    console.debug("Editor change:", { value, delta, source, editor});
+    setValue(value);
+  }
+
+  const handleCancel = () => {
+    // Clear value before to close
+    setValue(DEFAULT_VALUE);
+    setOpen(false);
   }
 
   return (
@@ -61,38 +70,32 @@ function Editor( { resource }: EditorProps ) {
         </Grid>
       </Box>
 
-      <Modal
+      <Dialog
         open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
+        onClose={handleClose}       
       >
-        <Box
-          sx={{
-            position: "absolute" as const,
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            boxShadow: 10,
-            outline: "none",
-            backgroundColor: "background.paper",
-          }}
-        >
-          <Box component="form" sx={{ width: 550 }}>
-            <LexicalComposer initialConfig={composerConfig}>
-              <RichTextPlugin
-                placeholder={null}
-                contentEditable={<ContentEditable />}
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <OnChangePlugin onChange={handleChange} />
-              <HistoryPlugin />
-              <AutoFocusPlugin />
-              <SubmitButtonPlugin onSubmit={handleSubmit}/>
-            </LexicalComposer>
+        <DialogTitle>Add Note</DialogTitle>
+        <DialogContent>
+          <Box
+            component="form"
+            className="flex flex-col gap-2"
+            onSubmit={handleSubmit}
+          >
+            <ReactQuill
+              theme="snow"
+              value={value}
+              onChange={handleChange}
+              className="flex-auto"
+              placeholder="Type something here..."
+            />
+            <Box className="flex-200px flex gap-2 justify-end">
+              <Button variant="outlined" onClick={handleCancel}>Cancel</Button>              
+              <Button variant="contained" type="submit">Submit</Button>
+            </Box>
+            <p>{status}</p>
           </Box>
-        </Box>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
