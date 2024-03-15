@@ -249,7 +249,10 @@ export namespace ApiClient {
     export namespace internal {
 
         export function createNote(note: api.NotePOST, resource: api.Resource): Promise<AxiosResponse<api.Note>> {
-            return httpClient.post(API_PATH.NOTES, note, { params: { url: resource.url } });
+            const _note = {
+                content: JSON.stringify(note.content) // TODO: allow an object instead of string on the backend API? Would be symetric
+            };
+            return httpClient.post(API_PATH.NOTES, _note, { params: { url: resource.url }} );
         }
 
         export function getResource(url: string): Promise<AxiosResponse<api.Resource>> {
