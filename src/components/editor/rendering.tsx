@@ -1,5 +1,3 @@
-import { useCallback } from "react"
-
 /**
  * Code shared by Editor and ReadOnlyEditor to render a graph.
  */
