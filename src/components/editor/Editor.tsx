@@ -40,7 +40,7 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
 
   const [value, setValue] = useState<Descendant[]>(DEFAULT_VALUE);
   const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => !resource.locked && setOpen(true);
   const handleClose = () => setOpen(false);
   const [status, setStatus] = useState<string | null>(null);
   const api = useApiClient();
