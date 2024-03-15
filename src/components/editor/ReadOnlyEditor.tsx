@@ -17,6 +17,7 @@ export const ReadOnlyEditor = ({ value }: { value: Descendant[]}) => {
     return (
         <Slate editor={editor} initialValue={value}>
             <Editable
+                readOnly
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
             />
