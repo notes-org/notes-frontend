@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import EditIcon from "@mui/icons-material/Edit";
 import { EditorProps } from "./types";
 import { useApiClient } from "../../hooks/useApiClient";
-import { Button, Icon, Toolbar } from '@mui/material'
+import { Button, Icon, IconButton } from '@mui/material'
 import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import isHotkey from 'is-hotkey'
 import {
@@ -108,7 +108,7 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
             onSubmit={handleSubmit}
           >
             <Slate editor={editor} initialValue={value} onChange={handleChange}>
-              <Toolbar>
+              <Box>
                 <MarkButton format="bold" icon="format_bold" />
                 <MarkButton format="italic" icon="format_italic" />
                 <MarkButton format="underline" icon="format_underlined" />
@@ -122,7 +122,7 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
                 <BlockButton format="center" icon="format_align_center" />
                 <BlockButton format="right" icon="format_align_right" />
                 <BlockButton format="justify" icon="format_align_justify" />
-              </Toolbar>
+              </Box>
               <Editable
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
@@ -215,42 +215,48 @@ const isBlockActive = (editor: BaseEditor, format: any, blockType = 'type'): boo
   return !!match
 }
 
-const isMarkActive = (editor: BaseEditor, format: any): boolean => { // TODO: typings (any)
-  const marks = SlateEditor.marks(editor)
-  return marks && format in marks && (marks as any)[format]; // TODO: typings (any)
+const isMarkActive = (editor: BaseEditor, format: string) => {
+  const marks: any = SlateEditor.marks(editor) // TODO: typings (any)
+  return marks ? marks[format] === true : false
 }
 
 const BlockButton = ({ format, icon }: any) => { // TODO: typings (any)
   const editor = useSlate()
   return (
-    <Button    
-      disabled={!isBlockActive(
+    <IconButton    
+      size="small"  
+      /** This is supposed to show a feedback of the state, but does not work
+       * disabled={isBlockActive(
         editor,
         format,
         TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type'
-      )}
+      )}   */
       onMouseDown={(event: any) => { // TODO: typings (any)
         event.preventDefault()
         toggleBlock(editor, format)
       }}
+      title="Work in progress..."
     >
       <Icon>{icon}</Icon>
-    </Button>
+    </IconButton>
   )
 }
 
 const MarkButton = ({ format, icon }: any) => { // TODO: typings (any)
-  const editor = useSlate()
+  const editor = useSlate();
   return (
-    <Button      
-      disabled={!isMarkActive(editor, format)}
+    <IconButton
+      size="small"  
+      /** This is supposed to show a feedback of the state, but does not work       
+      disabled={!isMarkActive(editor, format)} */
       onMouseDown={ (event: any) => { // TODO: typings (any)
         event.preventDefault()
         toggleMark(editor, format)
       }}
+      title="Work in progress..."
     >
       <Icon>{icon}</Icon>
-    </Button>
+    </IconButton>
   )
 }
 
