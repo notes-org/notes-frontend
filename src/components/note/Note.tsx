@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { NoteProps } from "./types";
 import { formatDate } from "../../utils/DateTime";
-import ReactQuill from "react-quill";
+import { ReadOnlyEditor } from "../editor/ReadOnlyEditor";
 
 function Note({ note }: NoteProps) {
 
@@ -45,7 +45,7 @@ function Note({ note }: NoteProps) {
               </Grid>
               <Grid item>
                 <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
-                  <ReactQuill theme="bubble" value={note.content} readOnly/>                
+                <ReadOnlyEditor value={note.content}/>              
                 </Typography>
               </Grid>
             </Grid>

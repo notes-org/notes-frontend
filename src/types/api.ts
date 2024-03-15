@@ -1,3 +1,5 @@
+import { Descendant } from "slate/dist/interfaces";
+
 /**
  * Typings corresponding to the API
  * see http://127.0.0.1:8000/docs or http://127.0.0.1:8000/redoc
@@ -7,7 +9,7 @@ export namespace api {
     /** Note type in the context of a GET request */
     export type Note = {
         /** LexicalComposer's state JSON string */
-        content: string;
+        content: Descendant[];
         created_at: string;
     }
 
