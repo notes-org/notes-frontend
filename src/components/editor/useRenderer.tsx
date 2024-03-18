@@ -1,7 +1,10 @@
 /**
  * Code shared by Editor and ReadOnlyEditor to render a graph.
  */
-export const Element = ({ attributes, children, element }: any) => { // TODO: typings (any)
+
+import { useCallback } from "react"
+
+const Element = ({ attributes, children, element }: any) => {
     const style = { textAlign: element.align }
     switch (element.type) {
         case 'block-quote':
@@ -49,7 +52,7 @@ export const Element = ({ attributes, children, element }: any) => { // TODO: ty
     }
 }
 
-export const Leaf = ({ attributes, children, leaf }: any) => { // TODO: typings (any)
+const Leaf = ({ attributes, children, leaf }: any) => {
     if (leaf.bold) {
         children = <strong>{children}</strong>
     }
@@ -67,4 +70,21 @@ export const Leaf = ({ attributes, children, leaf }: any) => { // TODO: typings 
     }
 
     return <span {...attributes}>{children}</span>
+}
+
+/**
+ * Provide two render methods (as callback) to pass to Slate.
+ */
+export function useRenderer() {
+
+    // Create 2 callback with an empty array for dependencies.
+    // Reference will never change, Slate demo code was using this to limit re-render.
+
+    const renderElement = useCallback((props: any) => <Element {...props} />, [])
+    const renderLeaf = useCallback((props: any) => <Leaf {...props} />, [])
+    
+    return {
+        renderElement,
+        renderLeaf
+    }
 }

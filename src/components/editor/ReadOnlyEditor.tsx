@@ -1,7 +1,7 @@
 import { Editable, Slate, withReact } from "slate-react";
 import { Descendant, createEditor } from "slate";
-import { useCallback, useMemo } from "react";
-import { Element, Leaf} from "./rendering";
+import { useMemo } from "react";
+import { useRenderer } from "./useRenderer";
 
 /**
  * Wraps a minimalist Slate Editor to render a given graph (Descendant[])
@@ -12,8 +12,7 @@ export const ReadOnlyEditor = ({ value }: { value: Descendant[]}) => {
      *       Indeed, the functions renderElement and renderLeaf should be enough for a readonly note.
      */
     const editor = useMemo(() => withReact(createEditor()), [])
-    const renderElement = useCallback( (props: any) => <Element {...props} />, []) // TODO: typings (any)
-    const renderLeaf = useCallback((props: any) => <Leaf {...props} />, []) // TODO: typings (any)
+    const { renderElement, renderLeaf } = useRenderer();
     return (
         <Slate editor={editor} initialValue={value}>
             <Editable

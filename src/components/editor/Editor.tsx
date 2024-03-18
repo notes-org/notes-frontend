@@ -18,7 +18,7 @@ import {
 } from 'slate'
 import { Editable, withReact, useSlate, Slate } from 'slate-react'
 import { withHistory } from 'slate-history'
-import { Element, Leaf } from './rendering'
+import { useRenderer } from './useRenderer'
 
 const HOTKEYS = {
   'mod+b': 'bold',
@@ -45,9 +45,8 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
   const [status, setStatus] = useState<string | null>(null);
   const api = useApiClient();
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
-  const renderElement = useCallback( (props: any) => <Element {...props} />, []) // TODO: typings (any)
-  const renderLeaf = useCallback((props: any) => <Leaf {...props} />, []) // TODO: typings (any)
-  
+  const { renderElement, renderLeaf } = useRenderer();
+
   useEffect( () => {
     if (!open) setStatus(null)
   }, [open])
