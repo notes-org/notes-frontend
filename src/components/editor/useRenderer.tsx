@@ -21,13 +21,13 @@ const Element = ({ attributes, children, element }: any) => {
             )
         case 'heading-one':
             return (
-                <h1 style={style} {...attributes}>
+                <h1 className="text-lg" style={style} {...attributes}>
                     {children}
                 </h1>
             )
         case 'heading-two':
             return (
-                <h2 style={style} {...attributes}>
+                <h2 className="text-xl" style={style} {...attributes}>
                     {children}
                 </h2>
             )
