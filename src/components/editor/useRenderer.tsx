@@ -13,12 +13,7 @@ const Element = ({ attributes, children, element }: any) => {
                     {children}
                 </blockquote>
             )
-        case 'bulleted-list':
-            return (
-                <ul style={style} {...attributes}>
-                    {children}
-                </ul>
-            )
+
         case 'heading-one':
             return (
                 <h1 className="text-lg" style={style} {...attributes}>
@@ -37,18 +32,26 @@ const Element = ({ attributes, children, element }: any) => {
                     {children}
                 </li>
             )
+        case 'bulleted-list':
+            return (
+                <ul className="list-inside list-disc" style={style} {...attributes}>
+                    {children}
+                </ul>
+            )
         case 'numbered-list':
             return (
-                <ol style={style} {...attributes}>
+                <ol className="list-inside list-decimal" style={style} {...attributes}>
                     {children}
                 </ol>
             )
-        default:
+        case 'paragraph':
             return (
                 <p style={style} {...attributes}>
                     {children}
                 </p>
             )
+        default:
+            throw new Error('Unhandled case')
     }
 }
 
