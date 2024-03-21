@@ -141,7 +141,7 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
                 }}
               />
             </Slate>
-            <Box className="flex-200px flex gap-2 justify-end">
+            <Box className="flex gap-2 justify-end">
               <Button variant="outlined" onClick={handleCancel}>Cancel</Button>              
               <Button variant="contained" type="submit">Submit</Button>
             </Box>
