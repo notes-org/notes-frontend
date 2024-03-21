@@ -128,7 +128,7 @@ function Editor( { resource, onCreateNote }: EditorProps ) {
                 placeholder="Type something here..."
                 spellCheck
                 autoFocus
-                className="flex-auto"                
+                className="basis-32 border-2 border-slate-150 p-1"                
                 onKeyDown={event => {
                   let hotkey: keyof typeof HOTKEYS;
                   for (hotkey in HOTKEYS) {
