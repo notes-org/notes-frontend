@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
-import { useUserContext, useUserDispatch } from "../contexts/UserContext";
-import { UserCreate, UserCredentials } from "../types/user";
+import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext";
+import { User, UserCreate, UserCredentials } from "../types/user";
 import { ApiClient } from "../utils/ApiClient";
 
 /**
@@ -22,12 +22,12 @@ export function useApiClient() {
     /** Query users/me in case user context state is disconnected */
     useEffect( () => {
         async function fetch() {
-            if ( !context.isLogged ) {
+            if ( context.status === Status.IDLE ) {
                 console.debug("Automatic getme()...")
-                const _user = await ApiClient.getme();
-                if ( _user ) {
-                    console.debug("Automatic getme() success", _user)
-                    dispatch({ type: "loggedIn", username: _user.username })
+                const user = await ApiClient.getme();
+                if ( user ) {
+                    console.debug("Automatic getme() success", user)
+                    dispatch({ type: "loggedIn", user })
                 }
             }
         }
@@ -37,34 +37,36 @@ export function useApiClient() {
     /**
      * Sign up using credentials and update user context accordingly
      */
-    const signup = useCallback( async (userCreate: UserCreate): Promise<boolean> => {
-        const success = await ApiClient.signup(userCreate);
-        if ( success ) {
-            dispatch({ type: 'loggedIn', username: userCreate.username})
+    const signup = useCallback( async (userCreate: UserCreate): Promise<User | null> => {
+        dispatch({ type: 'logging' })
+        const user = await ApiClient.signup(userCreate);
+        if ( user ) {
+            dispatch({ type: 'loggedIn', user })
         } else {
-            dispatch({ type: 'error', message: "Unable to sign up"})
+            dispatch({ type: 'error', message: "Unable to sign up."})
         }
-        return success;
+        return user;
     }, [context])
 
     /**
      * Login using credentials and update user context accordingly
      */
-    const login = useCallback( async (credentials: UserCredentials): Promise<boolean> => {
-        const success = await ApiClient.login(credentials);
-        if ( success ) {
-            dispatch({ type: 'loggedIn', username: credentials.username})
+    const login = useCallback( async (credentials: UserCredentials): Promise<User | null> => {
+        dispatch({ type: 'logging' })
+        const user = await ApiClient.login(credentials);
+        if ( user ) {
+            dispatch({ type: 'loggedIn', user })
         } else {
-            dispatch({ type: 'error', message: "Unable to log in"})
+            dispatch({ type: 'error', message: "Wrong credentials"})
         }
-        return success;     
+        return user;     
     }, [context])
     
     /**
      * Logout using credentials and update user context accordingly
      */
     const logout = useCallback( async (): Promise<boolean> => {
-        if ( !context.isLogged ) {
+        if ( context.status !== Status.CONNECTED ) {
             console.warn(`Unable to logout, no user is currently connected`)
             return false;
         }
