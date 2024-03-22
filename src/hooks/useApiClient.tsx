@@ -64,7 +64,7 @@ export function useApiClient() {
      * Logout using credentials and update user context accordingly
      */
     const logout = useCallback( async (): Promise<boolean> => {
-        if ( context.isLogged == null || context.username == null) {
+        if ( !context.isLogged ) {
             console.warn(`Unable to logout, no user is currently connected`)
             return false;
         }

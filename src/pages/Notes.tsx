@@ -20,7 +20,7 @@ function Notes() {
   const setURL = (value: string) => {
     setSearchParams({ url: value });
   }
-  const { data: resource, error, isLoading } = useQuery(
+  const { data: resource, error, isLoading, refetch } = useQuery(
     [
       'get-resource', {
         url
@@ -43,6 +43,10 @@ function Notes() {
   /** Debounced setURL to use when user is typing */
   const setURLDebounced = useDebouncedCallback(setURL, 500);
 
+  function handleCreateNote(): void {
+    refetch()
+  }
+
   return (<>
     <TopBar
       defaultValue={url}
@@ -60,7 +64,7 @@ function Notes() {
         {isLoading && <h1 style={{ color: 'grey' }}>Loading ...</h1>}
         {resource && <>
           <Resource resource={resource} />
-          <Editor resource={resource} />
+          <Editor resource={resource} onCreateNote={handleCreateNote}/>
           <Filters />
           {resource.notes.map((note, idx) => <Note key={idx} note={note} />)}
         </>}
