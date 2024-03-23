@@ -102,8 +102,8 @@ export namespace ApiClient {
      */
     export async function getme(): Promise<User | null> {
         try {
-            // Note that if it fails, the interceptor migh be able to catch it and
-            // grab the token from the local storaga and retry (see interceptors above)
+            // Note that if it fails, the interceptor might be able to catch it and
+            // grab the token from the local storage and retry (see interceptors above)
             const response = await httpClient.get(`${API_PATH.USERS}/me`);
             return response.data
         } catch (error: any) {

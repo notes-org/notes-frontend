@@ -31,7 +31,7 @@ export function UserLoginForm({ onLogged: dispatchEvent }: UserLoginFormProps) {
         event?.preventDefault();
         setStatus('Connecting...')
         const user = await api.login(formData);    
-        setStatus(user ? "Success" : "Unable to login, check your credentials an retry.");
+        setStatus(user ? "Success" : "Unable to login; check your credentials and retry.");
         dispatchEvent({user})
     }
 
@@ -39,7 +39,7 @@ export function UserLoginForm({ onLogged: dispatchEvent }: UserLoginFormProps) {
         event?.preventDefault();
         setStatus('Signing-Up...')
         const user = await api.signup(formData);    
-        setStatus(user ? "Success" : "Unable to sign-up, login may be already in use.");
+        setStatus(user ? "Success" : "Unable to sign up; you may already be logged in.");
         dispatchEvent({user, signedUp: true});
     }
 
