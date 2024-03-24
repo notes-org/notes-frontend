@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext";
 import { User, UserCreate, UserCredentials } from "../types/user";
 import { ApiClient } from "../utils/ApiClient";
+import { useAlertDispatch } from "../contexts/AlertContext";
 
 /**
  * Wraps ApiClient functions as a React hook.
@@ -17,7 +18,8 @@ import { ApiClient } from "../utils/ApiClient";
  */
 export function useApiClient() {
     const context = useUserContext();
-    const dispatch = useUserDispatch();
+    const userDispatch = useUserDispatch();
+    const alertDispatch = useAlertDispatch();
 
     /** Query users/me in case user context state is disconnected */
     useEffect( () => {
@@ -27,7 +29,8 @@ export function useApiClient() {
                 const user = await ApiClient.getme();
                 if ( user ) {
                     console.debug("Automatic getme() success", user)
-                    dispatch({ type: "loggedIn", user })
+                    alertDispatch({type: 'push', alert: { message: `Hi ${user.username}, welcome back!`, title: 'Logged', severity: 'success' }})
+                    userDispatch({ type: "loggedIn", user })
                 }
             }
         }
@@ -38,12 +41,13 @@ export function useApiClient() {
      * Sign up using credentials and update user context accordingly
      */
     const signup = useCallback( async (userCreate: UserCreate): Promise<User | null> => {
-        dispatch({ type: 'logging' })
+        userDispatch({ type: 'logging' })
         const user = await ApiClient.signup(userCreate);
         if ( user ) {
-            dispatch({ type: 'loggedIn', user })
+            alertDispatch({type: 'push', alert: { message: 'Successfully signed up', title: 'Logged', severity: 'success' }})
+            userDispatch({ type: 'loggedIn', user })
         } else {
-            dispatch({ type: 'error', message: "Unable to sign up."})
+            alertDispatch({type: 'push', alert: { message: 'Unable to sign up.', title: 'Logged', severity: 'error' }})
         }
         return user;
     }, [context])
@@ -52,12 +56,12 @@ export function useApiClient() {
      * Login using credentials and update user context accordingly
      */
     const login = useCallback( async (credentials: UserCredentials): Promise<User | null> => {
-        dispatch({ type: 'logging' })
+        userDispatch({ type: 'logging' })
         const user = await ApiClient.login(credentials);
         if ( user ) {
-            dispatch({ type: 'loggedIn', user })
-        } else {
-            dispatch({ type: 'error', message: "Wrong credentials"})
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Logged', severity: 'success' }})
+            userDispatch({ type: 'loggedIn', user }) 
+            alertDispatch({type: 'push', alert: { message: 'Wrong credentials', title: 'Logged', severity: 'error' }})
         }
         return user;     
     }, [context])
@@ -72,9 +76,10 @@ export function useApiClient() {
         }
         const success = await ApiClient.logout();
         if ( success ) {
-            dispatch({ type: 'loggedOut' })
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Logged', severity: 'info' }})
+            userDispatch({ type: 'loggedOut' })
         } else {
-            dispatch({ type: 'error', message: "Unable to log out"})
+            alertDispatch({type: 'push', alert: { message: 'Unable to log out', title: 'Logged', severity: 'error' }})
         }
         return success;     
     }, [context])
