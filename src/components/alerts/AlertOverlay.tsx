@@ -1,6 +1,10 @@
 import MuiAlert from "@mui/material/Alert";
 import { AlertData, useAlertContext, useAlertDispatch } from "../../contexts/AlertContext"
 
+/**
+ * Overlay to display the alerts.
+ * Is using 100% of the parent's space.
+ */
 export function AlertOverlay() {
     const context = useAlertContext();
     const dispatch = useAlertDispatch();
