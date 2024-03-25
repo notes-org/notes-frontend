@@ -87,22 +87,27 @@ export namespace ApiClient {
     /**
      * Create a new user with the provided user information.
      */
-    export async function signup(user: UserCreate): Promise<boolean> {
+    export async function signup(user: UserCreate): Promise<User | null> {
         try {
-            return await httpClient.post(`${API_PATH.USERS}`, user);
+            await httpClient.post(`${API_PATH.USERS}`, user);
         } catch (error: any) {
             console.error(`Unable to signup`, error)
-            return false;
+            return null;
         }   
+        return ApiClient.getme();
     }
 
+    /**
+     * Get the current user
+     */
     export async function getme(): Promise<User | null> {
         try {
-            // Note that if it fails, the interceptor migh be able to catch it and
-            // grab the token from the local storaga and retry (see interceptors above)
-            return await httpClient.get(`${API_PATH.USERS}/me`);
-        } catch ( error: any) {
-            console.error(`Unable to get current user`, error)
+            // Note that if it fails, the interceptor might be able to catch it and
+            // grab the token from the local storage and retry (see interceptors above)
+            const response = await httpClient.get(`${API_PATH.USERS}/me`);
+            return response.data
+        } catch (error: any) {
+            // error skipped on purpose, they are very annoying and http errors can also be seen in the network tab
             return null;
         }
     }
@@ -121,10 +126,12 @@ export namespace ApiClient {
      * access_token is stored in the local storage as "access_token" and will be automatically
      * injected (see interceptors above)
      */
-    export async function login({username, password}: UserCredentials): Promise<boolean> {
+    export async function login({username, password}: UserCredentials): Promise<User | null> {
         if (!username || !password) {
             throw new Error("Username and/or password is empty or undefined")
         }
+
+        // 1) login to get an updated access_token
         try {
             const response = await httpClient.post(
                 `${API_PATH.AUTH}/token`,
@@ -132,11 +139,13 @@ export namespace ApiClient {
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
             localStorage.setItem("access_token", response.data.access_token);
-            return true;
         } catch (error: any) {
             console.error(`Unable to login`, error)
-            return false;
+            return null;
         }
+        
+        // 2) get current user
+        return ApiClient.getme();
     }
 
     /**

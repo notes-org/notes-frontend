@@ -1,15 +1,27 @@
 import { Dispatch, PropsWithChildren, createContext, useContext, useReducer } from 'react';
-import { UserCredentials } from '../types/user';
+import { User } from '../types/user';
 
-type State = {
-    username: string | null;
-    isLogged: boolean;
-    status: string;
+export enum Status {
+  IDLE = 0,
+  CONNECTION_IN_PROGRESS,
+  CONNECTED
 }
 
-type Action = { type: 'loggedIn', username: UserCredentials['username'] }
+type State = {
+  /** The currently connected user, user is null except when status is CONNECTED */
+  user: User | null;
+  /** User's status as an enumeration */
+  status: Status;
+  /** User's status as a string */
+  statusMessage: string;
+  /** Last error message, may be cleared by an Action dispatch */
+  errorMessage?: string;
+}
+
+type Action = { type: 'loggedIn', user: User }
             | { type: 'loggedOut' }
             | { type: 'logging' }
+            | { type: 'reset' }
             | { type: 'error', message: string }
             
 const Context = createContext<State | null>(null);
@@ -46,33 +58,42 @@ export function useUserDispatch(): Dispatch<Action> {
 
 function userReducer(state: State, action: Action): State {
   switch (action.type) {
+    case 'reset': {
+      return {
+        ...initialState
+      }
+    }
     case 'error': {
         return {
             ...state,
-            status: action.message
+            errorMessage: action.message
         }
     }
     case 'logging': {
         return {
             ...state,
-            status: 'Logging...'
+            status: Status.CONNECTION_IN_PROGRESS,
+            statusMessage: 'Logging...'
         }
     }
     case 'loggedIn': {
-        console.debug(`${action.username} is now logged in`)
+        console.debug(`${action.user.username} is now logged in`)
         return {
-            username: action.username,
-            isLogged: true,
-            status: "Successfully Connected"
+          user: action.user,
+          status: Status.CONNECTED,
+          statusMessage: "Successfully Connected"
         };
     }
     case 'loggedOut': {
-        console.debug(`${state.username} is now logged out`)
-        return {
-            username: null,
-            isLogged: false,
-            status: "Logged out"
-          };
+      if ( state.user === null || state.status !== Status.CONNECTED ) {
+        throw new Error("Unable to logout, no user is currently logged.")
+      }
+      console.debug(`${state.user.username} is now logged out`)
+      return {
+        user: null,
+        status: Status.IDLE,
+        statusMessage: "Logged out"
+      };
     }
     default:
         const _action: never = action; // To fail at compile time
@@ -81,7 +102,7 @@ function userReducer(state: State, action: Action): State {
 }
 
 const initialState: State = {
-    username: null,
-    isLogged: false,
-    status: 'Not connected'
+    user: null,
+    status: Status.IDLE,
+    statusMessage: 'Not connected',
 }
