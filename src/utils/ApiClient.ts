@@ -5,10 +5,12 @@ import mem from 'mem'; // Memoized
 import { User, UserCreate, UserCredentials } from '../types/user';
 
 export class ApiError extends Error {
-    reason: any;
-    constructor(message: string, reason: any) {
-        super(message);
-        this.reason = reason;
+    name: string;
+    error: any;
+    constructor(error: any) {
+        super(error?.response?.data?.detail ?? error.message);
+        this.name = error.name;
+        this.error = error;
     }
 }
 
@@ -87,28 +89,26 @@ export namespace ApiClient {
     /**
      * Create a new user with the provided user information.
      */
-    export async function signup(user: UserCreate): Promise<User | null> {
+    export async function signup(user: UserCreate): Promise<User> {
         try {
             await httpClient.post(`${API_PATH.USERS}`, user);
-        } catch (error: any) {
-            console.error(`Unable to signup`, error)
-            return null;
-        }   
-        return ApiClient.getme();
+            return ApiClient.getme();
+        } catch (error: unknown) {
+            throw new ApiError(error);
+        }        
     }
 
     /**
      * Get the current user
      */
-    export async function getme(): Promise<User | null> {
+    export async function getme(): Promise<User> {
         try {
             // Note that if it fails, the interceptor might be able to catch it and
             // grab the token from the local storage and retry (see interceptors above)
             const response = await httpClient.get(`${API_PATH.USERS}/me`);
             return response.data
-        } catch (error: any) {
-            // error skipped on purpose, they are very annoying and http errors can also be seen in the network tab
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
     }
 
@@ -126,7 +126,7 @@ export namespace ApiClient {
      * access_token is stored in the local storage as "access_token" and will be automatically
      * injected (see interceptors above)
      */
-    export async function login({username, password}: UserCredentials): Promise<User | null> {
+    export async function login({username, password}: UserCredentials): Promise<User> {
         if (!username || !password) {
             throw new Error("Username and/or password is empty or undefined")
         }
@@ -139,9 +139,8 @@ export namespace ApiClient {
                 { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
             );
             localStorage.setItem("access_token", response.data.access_token);
-        } catch (error: any) {
-            console.error(`Unable to login`, error)
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
         
         // 2) get current user
@@ -153,13 +152,12 @@ export namespace ApiClient {
      * @param url The url of the Resource.
      * @returns a Resource or null if it fails
      */
-    export async function createResource(url: api.Resource['url']): Promise<api.Resource | null> {
+    export async function createResource(url: api.Resource['url']): Promise<api.Resource> {
         try {
             const response = await internal.createResource(url);
             return response.data;
-        } catch (error: any) {
-            console.error(`Unable to createResource`, error)
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
     }
 
@@ -168,13 +166,12 @@ export namespace ApiClient {
      * @param note   The Note to create.
      * @param url    The URL of the related Resource.
      */
-    export async function createNote(note: api.NotePOST, resource: api.Resource): Promise<api.Note | null> {
+    export async function createNote(note: api.NotePOST, resource: api.Resource): Promise<api.Note> {
         try {
             const response = await internal.createNote(note, resource);
             return response.data;
-        } catch (error: any) {
-            console.error(`Unable to createNote`, error)
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
     }
 
@@ -182,13 +179,12 @@ export namespace ApiClient {
      * Get all the notes related to a given Resource
      * @param url   The url of the related Resource. If not set, all notes will be returned
      */
-    export async function getNotes(resource: api.Resource): Promise<api.Note[] | null> {
+    export async function getNotes(resource: api.Resource): Promise<api.Note[]> {
         try {
             const response = await internal.getNotes(resource);
             return response.data;
-        } catch (error: any) {
-            console.error(`Unable to getNotes`, error)
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
     }
 
@@ -197,13 +193,12 @@ export namespace ApiClient {
      * @param url The url of the Resource.
      * @returns a Resource or null if it fails
      */
-    export async function getResource(url: string): Promise<api.Resource | null> {
+    export async function getResource(url: string): Promise<api.Resource> {
         try {
             const response = await internal.getResource(url);
             return response.data;
-        } catch (error: any) {
-            console.error(`Unable to getResource`, error)
-            return null;
+        } catch (error: unknown) {
+            throw new ApiError(error);
         }
     }
 
@@ -213,7 +208,7 @@ export namespace ApiClient {
      * @param url The url of the resource
      * @returns a Resource or null if it fails
      */
-    export async function getOrCreateResource(url: string): Promise<api.Resource | null> {
+    export async function getOrCreateResource(url: string): Promise<api.Resource> {
 
         // First, we try to get the resource (may exist)
         try {
@@ -221,10 +216,9 @@ export namespace ApiClient {
             const response = await internal.getResource(url);
             return response.data;
         } catch (error: any ) {    
-            // The only error we allow is a 404, otherwize we return a null
+            // The only error we allow is a 404, otherwize we throw an
             if (!error.response || error.response.status !== HttpStatusCode.NotFound) {
-                console.error('Unable to get the resource', error)
-                return null;                          
+                throw new ApiError(error);                          
             }
         }
 
@@ -236,8 +230,7 @@ export namespace ApiClient {
         } catch (error: any) {
             // The only error we allow is 409, it signify an other user created the same resource (race condition)
             if (!error.response || error.response.status !== HttpStatusCode.Conflict) {
-                console.error('Unable to create the resource', error)
-                return null;            
+                throw new ApiError(error);           
             }
         }
 
@@ -246,8 +239,7 @@ export namespace ApiClient {
             const response = await internal.getResource(url);
             return response.data;
         } catch (error: any) {
-            console.error(`Unable to getOrCreateResource`, error);
-            return null;
+            throw new ApiError(error); 
         }
     }
 

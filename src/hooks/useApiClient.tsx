@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext";
 import { User, UserCreate, UserCredentials } from "../types/user";
-import { ApiClient } from "../utils/ApiClient";
+import { ApiClient, ApiError } from "../utils/ApiClient";
 import { useAlertDispatch } from "../contexts/AlertContext";
 
 /**
@@ -26,11 +26,12 @@ export function useApiClient() {
         async function fetch() {
             if ( context.status === Status.IDLE ) {
                 console.debug("Automatic getme()...")
-                const user = await ApiClient.getme();
-                if ( user ) {
-                    console.debug("Automatic getme() success", user)
-                    alertDispatch({type: 'push', alert: { message: `Hi ${user.username}, welcome back!`, title: 'Logged', severity: 'success' }})
+                try {
+                    const user = await ApiClient.getme();
+                    alertDispatch({type: 'push', alert: { message: `Hi ${user.username}, welcome back!`, title: 'Authentication', severity: 'info' }})
                     userDispatch({ type: "loggedIn", user })
+                } catch( error: any | ApiError) {
+                    console.debug(error.message); // Silent, to fail automatic getme is not an issue
                 }
             }
         }
@@ -42,46 +43,52 @@ export function useApiClient() {
      */
     const signup = useCallback( async (userCreate: UserCreate): Promise<User | null> => {
         userDispatch({ type: 'logging' })
-        const user = await ApiClient.signup(userCreate);
-        if ( user ) {
-            alertDispatch({type: 'push', alert: { message: 'Successfully signed up', title: 'Logged', severity: 'success' }})
+        try {
+            const user = await ApiClient.signup(userCreate);
+            alertDispatch({type: 'push', alert: { message: 'Successfully signed up', title: 'Authentication', severity: 'success' }})
             userDispatch({ type: 'loggedIn', user })
-        } else {
-            alertDispatch({type: 'push', alert: { message: 'Unable to sign up.', title: 'Logged', severity: 'error' }})
+            return user;
+        } catch( error: any | ApiError ) {
+            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            return null;
         }
-        return user;
     }, [context])
 
     /**
-     * Login using credentials and update user context accordingly
+     * Login using credentials and update user context accordingly.
+     * Alerts may be pushed as side effect when user is logged or when an error occured.
      */
     const login = useCallback( async (credentials: UserCredentials): Promise<User | null> => {
         userDispatch({ type: 'logging' })
-        const user = await ApiClient.login(credentials);
-        if ( user ) {
-            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Logged', severity: 'success' }})
-            userDispatch({ type: 'loggedIn', user }) 
-            alertDispatch({type: 'push', alert: { message: 'Wrong credentials', title: 'Logged', severity: 'error' }})
-        }
-        return user;     
+        
+        try {
+            const user = await ApiClient.login(credentials);           
+            userDispatch({ type: 'loggedIn', user })     
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Authentication', severity: 'success' }})        
+            return user;
+        } catch (error: any) {
+            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            return null;
+        }    
     }, [context])
     
     /**
      * Logout using credentials and update user context accordingly
      */
-    const logout = useCallback( async (): Promise<boolean> => {
+    const logout = useCallback( async (): Promise<Status> => {
         if ( context.status !== Status.CONNECTED ) {
             console.warn(`Unable to logout, no user is currently connected`)
-            return false;
+            return context.status;
         }
-        const success = await ApiClient.logout();
-        if ( success ) {
-            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Logged', severity: 'info' }})
-            userDispatch({ type: 'loggedOut' })
-        } else {
-            alertDispatch({type: 'push', alert: { message: 'Unable to log out', title: 'Logged', severity: 'error' }})
-        }
-        return success;     
+        try {
+            await ApiClient.logout();
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged out', title: 'Authentication', severity: 'info' }})
+            userDispatch({ type: 'loggedOut' });
+            return Status.IDLE;
+        } catch( error: any | ApiError) {
+            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            return context.status;
+        }   
     }, [context])
     
     const createNote = ApiClient.createNote; // TODO: create a NoteContext to store the current Resource with its Notes

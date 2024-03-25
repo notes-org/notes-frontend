@@ -1,7 +1,11 @@
+import moment, { Moment } from 'moment';
 import { Dispatch, PropsWithChildren, createContext, useContext, useReducer } from 'react';
+import { v4 as uuid } from 'uuid';
 
-export type AlertData = {  
-    date: Date;
+export type AlertData = {
+    /** Alert unique identifier */
+    uuid: string;  
+    date: Moment;
     severity: 'success' | 'info' | 'warning' | 'error'; // Matches with mui's alert's
     title: string;
     message: string;
@@ -20,8 +24,8 @@ const initialState: State = {
   maxHistoryLength: 10
 }
 
-type Action = { type: 'push', alert: Omit<AlertData, 'date' | 'count'> }
-            | { type: 'delete', alert: AlertData }
+type Action = { type: 'push', alert: Omit<AlertData, 'uuid' | 'date' | 'count'> }
+            | { type: 'delete', uuid: AlertData['uuid'] }
             
 const Context = createContext<State | null>(null);
 
@@ -55,13 +59,14 @@ function userReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'push': {
 
-      // If a similar alert exists, simply increment count
+      // If a similar alert exists, simply increment count and update date
       if ( state.alerts.length > 0) {
         const last = state.alerts[0];
         if ( last.severity === action.alert.severity && last.title === action.alert.title && last.message === action.alert.message ) {
           const newAlerts = [...state.alerts];
           newAlerts[0] = {
             ...last,
+            date: moment(),
             count: last.count + 1
           }
           return {
@@ -72,7 +77,13 @@ function userReducer(state: State, action: Action): State {
       }
 
       // Insert it first
-      const newAlerts = [{...action.alert, date: new Date(), count: 1}, ...state.alerts ];
+      const newAlert: AlertData = {
+        ...action.alert,
+        uuid: uuid(),
+        date: moment(),
+        count: 1
+      };
+      const newAlerts = [newAlert, ...state.alerts ];
 
       // Shrink alerts when history is too large
       while ( newAlerts.length > state.maxHistoryLength ) {
@@ -85,7 +96,7 @@ function userReducer(state: State, action: Action): State {
       }
     }
     case "delete": {
-      const newAlerts = state.alerts.filter( _notif => _notif !== action.alert )  
+      const newAlerts = state.alerts.filter( _alert => _alert.uuid !== action.uuid )  
       return {
         ...state,
         alerts: newAlerts
