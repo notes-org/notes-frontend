@@ -59,7 +59,7 @@ function userReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'push': {
 
-      // If a similar alert exists, simply increment count and update date
+      // If a similar alert exists, we replace it with update values
       if ( state.alerts.length > 0) {
         const last = state.alerts[0];
         if ( last.severity === action.alert.severity && last.title === action.alert.title && last.message === action.alert.message ) {
@@ -83,23 +83,16 @@ function userReducer(state: State, action: Action): State {
         date: moment(),
         count: 1
       };
-      const newAlerts = [newAlert, ...state.alerts ];
-
-      // Shrink alerts when history is too large
-      while ( newAlerts.length > state.maxHistoryLength ) {
-          newAlerts.pop();
-      }
 
       return {
           ...state,
-          alerts: newAlerts
+          alerts: [newAlert, ...state.alerts.slice(0, state.maxHistoryLength-1) ] // New alert + 9 older
       }
     }
     case "delete": {
-      const newAlerts = state.alerts.filter( _alert => _alert.uuid !== action.uuid )  
       return {
         ...state,
-        alerts: newAlerts
+        alerts: state.alerts.filter( _alert => _alert.uuid !== action.uuid )
       }
     }
   }  

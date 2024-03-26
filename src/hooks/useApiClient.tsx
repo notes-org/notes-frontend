@@ -3,6 +3,7 @@ import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext
 import { User, UserCreate, UserCredentials } from "../types/user";
 import { ApiClient, ApiError } from "../utils/ApiClient";
 import { useAlertDispatch } from "../contexts/AlertContext";
+import { api } from "../types/api";
 
 /**
  * Wraps ApiClient functions as a React hook.
@@ -52,7 +53,7 @@ export function useApiClient() {
             alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
             return null;
         }
-    }, [context])
+    }, [alertDispatch, userDispatch])
 
     /**
      * Login using credentials and update user context accordingly.
@@ -70,7 +71,7 @@ export function useApiClient() {
             alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
             return null;
         }    
-    }, [context])
+    }, [context, alertDispatch, useAlertDispatch])
     
     /**
      * Logout using credentials and update user context accordingly
@@ -89,10 +90,36 @@ export function useApiClient() {
             alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
             return context.status;
         }   
-    }, [context])
-    
-    const createNote = ApiClient.createNote; // TODO: create a NoteContext to store the current Resource with its Notes
-    const getOrCreateResource = ApiClient.getOrCreateResource; // same
+    }, [context, alertDispatch, userDispatch])
+
+    /**
+     * Create a new note on a given resource
+     */
+    const createNote = useCallback( async (note: api.NotePOST, resource: api.Resource): Promise<api.Note | null> => {
+        
+        // Is it necessary to check if user is logged and return early here? Instead, I rely on API's response.
+
+        try {
+            const newNote = await ApiClient.createNote(note, resource);
+            return newNote;
+        } catch( error: any | ApiError) {
+            alertDispatch({type: 'push', alert: { message: error.message, title: 'Create Note', severity: 'error' }})
+            return null;
+        }  
+    }, [alertDispatch])
+
+    /**
+     * Get or create a resource from a given url
+     */
+    const getOrCreateResource = useCallback( async (url: string): Promise<api.Resource | null> => {
+        try {
+            const resource = await ApiClient.getOrCreateResource(url);
+            return resource;
+        } catch( error: any | ApiError) {
+            alertDispatch({type: 'push', alert: { message: error.message, title: 'Get Or Create Resource', severity: 'error' }})
+            return null;
+        }   
+    }, [alertDispatch])
 
     return {
         signup,
