@@ -53,6 +53,7 @@ export function AlertOverlay() {
             
             return (
                 <MyAlert
+                    key={alert.uuid}
                     alert={alert}
                     onClose={handleCloseAlert}
                     delayInMs={delayInMs}
@@ -70,8 +71,7 @@ type MyAlertProps = {
 function MyAlert( {alert, onClose: handleCloseAlert, delayInMs}: MyAlertProps) {
 
     return (
-    <Alert
-        key={alert.uuid}
+    <Alert        
         className={`p-5 pointer-events-auto cursor-auto w-100`}
         severity={alert.severity}
         onClose={() => handleCloseAlert(alert.uuid)}
