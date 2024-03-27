@@ -14,15 +14,12 @@ type State = {
   status: Status;
   /** User's status as a string */
   statusMessage: string;
-  /** Last error message, may be cleared by an Action dispatch */
-  errorMessage?: string;
 }
 
 type Action = { type: 'loggedIn', user: User }
             | { type: 'loggedOut' }
             | { type: 'logging' }
-            | { type: 'reset' }
-            | { type: 'error', message: string }
+            | { type: 'reset' };
             
 const Context = createContext<State | null>(null);
 
@@ -62,12 +59,6 @@ function userReducer(state: State, action: Action): State {
       return {
         ...initialState
       }
-    }
-    case 'error': {
-        return {
-            ...state,
-            errorMessage: action.message
-        }
     }
     case 'logging': {
         return {

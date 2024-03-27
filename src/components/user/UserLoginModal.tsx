@@ -21,7 +21,7 @@ export function UserLoginModal(props: Props) {
     }
 
     return (
-        <Dialog {...props}>
+        <Dialog {...props} hideBackdrop>
             <Box sx={{ width: 350 }}>
                 <UserLoginForm onLogged={handleUserLogged} />
             </Box>
