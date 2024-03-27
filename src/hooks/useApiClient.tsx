@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext";
 import { User, UserCreate, UserCredentials } from "../types/user";
-import { ApiClient, ApiError } from "../utils/ApiClient";
+import { ApiClient, ApiClientError } from "../utils/ApiClient";
 import { useAlertDispatch } from "../contexts/AlertContext";
 import { api } from "../types/api";
 
@@ -31,8 +31,12 @@ export function useApiClient() {
                     const user = await ApiClient.getme();
                     alertDispatch({type: 'push', alert: { message: `Hi ${user.username}, welcome back!`, title: 'Authentication', severity: 'info' }})
                     userDispatch({ type: "loggedIn", user })
-                } catch( error: any | ApiError) {
-                    console.debug(error.message); // Silent, to fail automatic getme is not an issue
+                } catch( error: unknown) {
+                    if ( error instanceof ApiClientError ) {
+                        console.debug(error.message); // Silent, to fail automatic getme is not an issue
+                    } else {
+                        console.debug(String(error))
+                    }
                 }
             }
         }
@@ -49,8 +53,10 @@ export function useApiClient() {
             alertDispatch({type: 'push', alert: { message: 'Successfully signed up', title: 'Authentication', severity: 'success' }})
             userDispatch({ type: 'loggedIn', user })
             return user;
-        } catch( error: any | ApiError ) {
-            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+        } catch( error: unknown ) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            }
             return null;
         }
     }, [alertDispatch, userDispatch])
@@ -67,8 +73,12 @@ export function useApiClient() {
             userDispatch({ type: 'loggedIn', user })     
             alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Authentication', severity: 'success' }})        
             return user;
-        } catch (error: any) {
-            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+        } catch (error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            } else {
+                throw error;
+            }
             return null;
         }    
     }, [context, alertDispatch, useAlertDispatch])
@@ -81,15 +91,20 @@ export function useApiClient() {
             console.warn(`Unable to logout, no user is currently connected`)
             return context.status;
         }
+        let newStatus: Status = context.status;
         try {
             await ApiClient.logout();
             alertDispatch({type: 'push', alert: { message: 'Successfully logged out', title: 'Authentication', severity: 'info' }})
             userDispatch({ type: 'loggedOut' });
-            return Status.IDLE;
-        } catch( error: any | ApiError) {
-            alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
-            return context.status;
-        }   
+            newStatus = Status.IDLE;
+        } catch( error: unknown ) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            } else {
+                throw error;
+            }
+        }
+        return newStatus;   
     }, [context, alertDispatch, userDispatch])
 
     /**
@@ -99,26 +114,34 @@ export function useApiClient() {
         
         // Is it necessary to check if user is logged and return early here? Instead, I rely on API's response.
 
+        let newNote: api.Note | null = null;
         try {
-            const newNote = await ApiClient.createNote(note, resource);
-            return newNote;
-        } catch( error: any | ApiError) {
-            alertDispatch({type: 'push', alert: { message: error.message, title: 'Create Note', severity: 'error' }})
-            return null;
-        }  
+            newNote = await ApiClient.createNote(note, resource);
+        } catch( error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Create Note', severity: 'error' }})
+            } else {
+                throw error;
+            }
+        }
+        return newNote;
     }, [alertDispatch])
 
     /**
      * Get or create a resource from a given url
      */
     const getOrCreateResource = useCallback( async (url: string): Promise<api.Resource | null> => {
+        let newOrExistingResource: api.Resource | null = null;
         try {
-            const resource = await ApiClient.getOrCreateResource(url);
-            return resource;
-        } catch( error: any | ApiError) {
-            alertDispatch({type: 'push', alert: { message: error.message, title: 'Get Or Create Resource', severity: 'error' }})
-            return null;
+            newOrExistingResource = await ApiClient.getOrCreateResource(url);
+        } catch( error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Get Or Create Resource', severity: 'error' }})
+            } else {
+                throw error;
+            }
         }   
+        return newOrExistingResource;
     }, [alertDispatch])
 
     return {

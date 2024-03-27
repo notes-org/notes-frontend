@@ -1,16 +1,25 @@
 import { api } from '../types/api';
 import { API_PATH, env } from "../config";
-import axios, { AxiosInstance, AxiosResponse, HttpStatusCode } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse, HttpStatusCode } from 'axios';
 import mem from 'mem'; // Memoized
 import { User, UserCreate, UserCredentials } from '../types/user';
 
-export class ApiError extends Error {
+export class ApiClientError extends Error {
     name: string;
-    error: any;
-    constructor(error: any) {
-        super(error?.response?.data?.detail ?? error.message);
-        this.name = error.name;
-        this.error = error;
+    cause: unknown;
+    constructor(error: unknown) {
+        if ( error instanceof AxiosError) {
+            // Use API details if present
+            super(error.response?.data?.detail ?? error.message);
+            this.name = error.name;            
+        } else if ( error instanceof Error ) {
+            super(error.message);
+            this.name = error.name;
+        } else {
+            super(String(error));
+            this.name = "ApiError";
+        }       
+        this.cause = error; 
     }
 }
 
@@ -94,7 +103,7 @@ export namespace ApiClient {
             await httpClient.post(`${API_PATH.USERS}`, user);
             return ApiClient.getme();
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }        
     }
 
@@ -108,16 +117,15 @@ export namespace ApiClient {
             const response = await httpClient.get(`${API_PATH.USERS}/me`);
             return response.data
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
     }
 
     /**
      * TODO: nothing implemented on the backend side, should be manipulate this token manually on the frontend...?
      */
-    export async function logout(): Promise<boolean> {
-        localStorage.removeItem("access_token");
-        return true;    
+    export async function logout(): Promise<void> {
+        localStorage.removeItem("access_token");   
     }
 
     /**
@@ -140,7 +148,7 @@ export namespace ApiClient {
             );
             localStorage.setItem("access_token", response.data.access_token);
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
         
         // 2) get current user
@@ -157,7 +165,7 @@ export namespace ApiClient {
             const response = await internal.createResource(url);
             return response.data;
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
     }
 
@@ -171,7 +179,7 @@ export namespace ApiClient {
             const response = await internal.createNote(note, resource);
             return response.data;
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
     }
 
@@ -184,7 +192,7 @@ export namespace ApiClient {
             const response = await internal.getNotes(resource);
             return response.data;
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
     }
 
@@ -198,7 +206,7 @@ export namespace ApiClient {
             const response = await internal.getResource(url);
             return response.data;
         } catch (error: unknown) {
-            throw new ApiError(error);
+            throw new ApiClientError(error);
         }
     }
 
@@ -218,7 +226,7 @@ export namespace ApiClient {
         } catch (error: any ) {    
             // The only error we allow is a 404, otherwize we throw an
             if (!error.response || error.response.status !== HttpStatusCode.NotFound) {
-                throw new ApiError(error);                          
+                throw new ApiClientError(error);                          
             }
         }
 
@@ -230,7 +238,7 @@ export namespace ApiClient {
         } catch (error: any) {
             // The only error we allow is 409, it signify an other user created the same resource (race condition)
             if (!error.response || error.response.status !== HttpStatusCode.Conflict) {
-                throw new ApiError(error);           
+                throw new ApiClientError(error);           
             }
         }
 
@@ -239,7 +247,7 @@ export namespace ApiClient {
             const response = await internal.getResource(url);
             return response.data;
         } catch (error: any) {
-            throw new ApiError(error); 
+            throw new ApiClientError(error); 
         }
     }
 
