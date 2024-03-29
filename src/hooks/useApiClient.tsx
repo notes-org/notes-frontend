@@ -1,7 +1,9 @@
 import { useCallback, useEffect } from "react";
 import { Status, useUserContext, useUserDispatch } from "../contexts/UserContext";
 import { User, UserCreate, UserCredentials } from "../types/user";
-import { ApiClient } from "../utils/ApiClient";
+import { ApiClient, ApiClientError } from "../utils/ApiClient";
+import { useAlertDispatch } from "../contexts/AlertContext";
+import { api } from "../types/api";
 
 /**
  * Wraps ApiClient functions as a React hook.
@@ -17,17 +19,24 @@ import { ApiClient } from "../utils/ApiClient";
  */
 export function useApiClient() {
     const context = useUserContext();
-    const dispatch = useUserDispatch();
+    const userDispatch = useUserDispatch();
+    const alertDispatch = useAlertDispatch();
 
     /** Query users/me in case user context state is disconnected */
     useEffect( () => {
         async function fetch() {
             if ( context.status === Status.IDLE ) {
                 console.debug("Automatic getme()...")
-                const user = await ApiClient.getme();
-                if ( user ) {
-                    console.debug("Automatic getme() success", user)
-                    dispatch({ type: "loggedIn", user })
+                try {
+                    const user = await ApiClient.getme();
+                    alertDispatch({type: 'push', alert: { message: `Hi ${user.username}, welcome back!`, title: 'Authentication', severity: 'info' }})
+                    userDispatch({ type: "loggedIn", user })
+                } catch( error: unknown) {
+                    if ( error instanceof ApiClientError ) {
+                        console.debug(error.message); // Silent, to fail automatic getme is not an issue
+                    } else {
+                        console.debug(String(error))
+                    }
                 }
             }
         }
@@ -38,49 +47,102 @@ export function useApiClient() {
      * Sign up using credentials and update user context accordingly
      */
     const signup = useCallback( async (userCreate: UserCreate): Promise<User | null> => {
-        dispatch({ type: 'logging' })
-        const user = await ApiClient.signup(userCreate);
-        if ( user ) {
-            dispatch({ type: 'loggedIn', user })
-        } else {
-            dispatch({ type: 'error', message: "Unable to sign up."})
+        userDispatch({ type: 'logging' })
+        try {
+            const user = await ApiClient.signup(userCreate);
+            alertDispatch({type: 'push', alert: { message: 'Successfully signed up', title: 'Authentication', severity: 'success' }})
+            userDispatch({ type: 'loggedIn', user })
+            return user;
+        } catch( error: unknown ) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            }
+            return null;
         }
-        return user;
-    }, [context])
+    }, [alertDispatch, userDispatch])
 
     /**
-     * Login using credentials and update user context accordingly
+     * Login using credentials and update user context accordingly.
+     * Alerts may be pushed as side effect when user is logged or when an error occured.
      */
     const login = useCallback( async (credentials: UserCredentials): Promise<User | null> => {
-        dispatch({ type: 'logging' })
-        const user = await ApiClient.login(credentials);
-        if ( user ) {
-            dispatch({ type: 'loggedIn', user })
-        } else {
-            dispatch({ type: 'error', message: "Wrong credentials"})
-        }
-        return user;     
-    }, [context])
+        userDispatch({ type: 'logging' })
+        
+        try {
+            const user = await ApiClient.login(credentials);           
+            userDispatch({ type: 'loggedIn', user })     
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged', title: 'Authentication', severity: 'success' }})        
+            return user;
+        } catch (error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            } else {
+                throw error;
+            }
+            return null;
+        }    
+    }, [context, alertDispatch, useAlertDispatch])
     
     /**
      * Logout using credentials and update user context accordingly
      */
-    const logout = useCallback( async (): Promise<boolean> => {
+    const logout = useCallback( async (): Promise<Status> => {
         if ( context.status !== Status.CONNECTED ) {
             console.warn(`Unable to logout, no user is currently connected`)
-            return false;
+            return context.status;
         }
-        const success = await ApiClient.logout();
-        if ( success ) {
-            dispatch({ type: 'loggedOut' })
-        } else {
-            dispatch({ type: 'error', message: "Unable to log out"})
+        let newStatus: Status = context.status;
+        try {
+            await ApiClient.logout();
+            alertDispatch({type: 'push', alert: { message: 'Successfully logged out', title: 'Authentication', severity: 'info' }})
+            userDispatch({ type: 'loggedOut' });
+            newStatus = Status.IDLE;
+        } catch( error: unknown ) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Authentication', severity: 'error' }})
+            } else {
+                throw error;
+            }
         }
-        return success;     
-    }, [context])
-    
-    const createNote = ApiClient.createNote; // TODO: create a NoteContext to store the current Resource with its Notes
-    const getOrCreateResource = ApiClient.getOrCreateResource; // same
+        return newStatus;   
+    }, [context, alertDispatch, userDispatch])
+
+    /**
+     * Create a new note on a given resource
+     */
+    const createNote = useCallback( async (note: api.NotePOST, resource: api.Resource): Promise<api.Note | null> => {
+        
+        // Is it necessary to check if user is logged and return early here? Instead, I rely on API's response.
+
+        let newNote: api.Note | null = null;
+        try {
+            newNote = await ApiClient.createNote(note, resource);
+        } catch( error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Create Note', severity: 'error' }})
+            } else {
+                throw error;
+            }
+        }
+        return newNote;
+    }, [alertDispatch])
+
+    /**
+     * Get or create a resource from a given url
+     */
+    const getOrCreateResource = useCallback( async (url: string): Promise<api.Resource | null> => {
+        let newOrExistingResource: api.Resource | null = null;
+        try {
+            newOrExistingResource = await ApiClient.getOrCreateResource(url);
+        } catch( error: unknown) {
+            if ( error instanceof ApiClientError) {
+                alertDispatch({type: 'push', alert: { message: error.message, title: 'Get Or Create Resource', severity: 'error' }})
+            } else {
+                throw error;
+            }
+        }   
+        return newOrExistingResource;
+    }, [alertDispatch])
 
     return {
         signup,
